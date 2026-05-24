@@ -1,4 +1,4 @@
-name: Nityk
+name: nityk
 description: "a to-do, habit and logging application"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.1.0+1
@@ -7,6 +7,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  sqflite: ^2.4.2
+  path: ^1.9.1
   cupertino_icons: ^1.0.8
 dev_dependencies:
   flutter_test:
@@ -14,6 +16,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 flutter:
   uses-material-design: false
+  assets:
+    - assets/icons/
   fonts:
     - family: Jersey25
       fonts:

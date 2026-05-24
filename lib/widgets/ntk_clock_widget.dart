@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:nityk/theme/theme.dart';
 
 class ClockWidget extends StatefulWidget {
   const ClockWidget({super.key});
@@ -31,7 +32,7 @@ class _ClockWidgetState extends State<ClockWidget> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Text(
           '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}:${_now.second.toString().padLeft(2, '0')}',
-          style: TextStyle(fontSize: 28),
+          style: NtkText.headlineMedium,
         ),
       ),
     );

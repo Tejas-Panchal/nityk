@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:Nityk/theme/app_theme.dart';
+import 'package:flutter/widgets.dart';
+import 'package:nityk/theme/theme.dart';
 import 'package:flutter/services.dart';
-import 'package:Nityk/main_navigation.dart';
+import 'package:nityk/main_navigation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const NitykApp());
 }
 
@@ -13,13 +13,38 @@ class NitykApp extends StatelessWidget {
   const NitykApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Nityk',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
-      home: const MainNavigationScreen(title: 'Nityk'),
+    return NtkTheme(
+      child: WidgetsApp(
+        color: NtkColors.background,
+        pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
+          return _NoTransitionRoute<T>(settings: settings, builder: builder);
+        },
+        home: const MainNavigationScreen(title: 'Nityk'),
+      ),
     );
   }
+}
+
+class _NoTransitionRoute<T> extends PageRoute<T> {
+  _NoTransitionRoute({required super.settings, required this.builder});
+  final WidgetBuilder builder;
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return builder(context);
+  }
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+  @override
+  Color get barrierColor => const Color(0x00000000);
+  @override
+  String get barrierLabel => '';
+  @override
+  bool get maintainState => true;
 }

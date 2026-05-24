@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:Nityk/widgets/clock_widget.dart';
+import 'package:flutter/widgets.dart';
+import 'package:nityk/theme/theme.dart';
+import 'package:nityk/widgets/widgets.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key, required this.title});
@@ -10,70 +11,92 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  final List<NavDestination> _destinations = const [
-    NavDestination(
-      label: 'Home',
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-    ),
-    NavDestination(
-      label: 'Tasks',
-      icon: Icons.checklist_outlined,
-      selectedIcon: Icons.checklist,
-    ),
-    NavDestination(
-      label: 'Stats',
-      icon: Icons.bar_chart_outlined,
-      selectedIcon: Icons.bar_chart,
-    ),
-    NavDestination(
-      label: 'Profile',
-      icon: Icons.person_outlined,
-      selectedIcon: Icons.person,
-    ),
+  bool _isAddOpen = false;
+  final List<NtkBottomNavDestination> _destinations = const [
+    NtkBottomNavDestination(label: 'Home', icon: NtkIcons.home),
+    NtkBottomNavDestination(label: 'Tasks', icon: NtkIcons.tasks),
+    NtkBottomNavDestination(label: 'Stats', icon: NtkIcons.stats),
+    NtkBottomNavDestination(label: 'Settings', icon: NtkIcons.settings),
   ];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leadingWidth: 120,
+    return NtkScaffold(
+      appBar: NtkAppBar(
         leading: const ClockWidget(),
-        title: Text(widget.title, style: TextStyle(fontSize: 24)),
+        title: Text(widget.title, style: NtkText.headlineMedium),
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          GestureDetector(
+            onTap: () {},
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: NtkIcon(icon: NtkIcons.profile, size: 24),
+            ),
+          ),
         ],
       ),
-      body: Center(
-        child: Text(
-          _destinations[_currentIndex].label,
-          style: TextStyle(fontSize: 30),
-        ),
+      body: Stack(
+        children: [
+          Center(
+            child: Text(
+              _destinations[_currentIndex].label,
+              style: NtkText.headlineLarge,
+            ),
+          ),
+          if (_isAddOpen)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 8,
+              child: Center(
+                child: SizedBox(
+                  width: 210,
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(color: NtkColors.surface),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _ActionItem(icon: NtkIcons.add),
+                        _ActionItem(icon: NtkIcons.add),
+                        _ActionItem(icon: NtkIcons.add),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNav: NtkBottomNav(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
         },
-        destinations: _destinations.map((d) {
-          return NavigationDestination(
-            icon: Icon(d.icon),
-            selectedIcon: Icon(d.selectedIcon),
-            label: d.label,
-          );
-        }).toList(),
+        destinations: _destinations,
+        isAddOpen: _isAddOpen,
+        onAddPressed: () {
+          setState(() => _isAddOpen = !_isAddOpen);
+        },
       ),
     );
   }
 }
 
-class NavDestination {
-  final String label;
-  final IconData icon;
-  final IconData selectedIcon;
-
-  const NavDestination({
-    required this.label,
-    required this.icon,
-    required this.selectedIcon,
-  });
+class _ActionItem extends StatelessWidget {
+  final NtkIcons icon;
+  const _ActionItem({required this.icon});
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {},
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 48,
+        height: 48,
+        child: Center(
+          child: NtkIcon(icon: icon, size: 24, color: NtkColors.textSecondary),
+        ),
+      ),
+    );
+  }
 }
