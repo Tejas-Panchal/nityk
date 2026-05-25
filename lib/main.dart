@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:nityk/theme/theme.dart';
 import 'package:nityk/main_navigation.dart';
+import 'package:nityk/screens/screens.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const NitykApp());
 }
 
@@ -18,7 +20,15 @@ class NitykApp extends StatelessWidget {
         pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) {
           return _NoTransitionRoute<T>(settings: settings, builder: builder);
         },
-        home: const MainNavigationScreen(title: 'Nityk'),
+        home: MainNavigationScreen(
+          title: 'Nityk',
+          tabBuilders: [
+            (push) => HomeScreen(title: 'Nityk', push: push),
+            (push) => HabitsScreen(push: push),
+            (push) => TasksScreen(push: push),
+            (push) => LogsScreen(push: push),
+          ],
+        ),
       ),
     );
   }

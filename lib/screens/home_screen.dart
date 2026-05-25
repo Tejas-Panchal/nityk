@@ -4,7 +4,9 @@ import 'package:nityk/theme/theme.dart';
 import 'package:nityk/utils/datetime_utils.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String title;
+  final void Function(Widget) push;
+  const HomeScreen({super.key, required this.title, required this.push});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -49,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final fontSize = 56.0 + (72.0 - 56.0) * progress;
     return Column(
       children: [
-        // Clock — height driven by scroll offset
         Container(
           decoration: BoxDecoration(color: NtkColors.accentDim),
           height: clockHeight,
@@ -57,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(_time, style: NtkText.style(fontSize)),
+                if (showFull)
+                  Text(widget.title, style: NtkText.titleExtraLarge),
+                Text(DateTimeUtils.time(), style: NtkText.style(fontSize)),
                 if (showFull)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -67,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        // Scrollable content area
         Expanded(
           child: ListView(
             controller: _scrollController,
@@ -76,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: maxHeight * 2,
                 child: Center(
-                  child: Text('Area', style: NtkText.headlineLarge),
+                  child: Text('Home', style: NtkText.headlineLarge),
                 ),
               ),
             ],

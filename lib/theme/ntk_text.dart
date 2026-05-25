@@ -36,6 +36,13 @@ class NtkText {
     height: 1.29,
   );
   // Card / list titles
+  static const titleExtraLarge = TextStyle(
+    fontFamily: _font,
+    fontSize: 28,
+    fontWeight: FontWeight.w400,
+    color: NtkColors.textPrimary,
+    height: 1.27,
+  );
   static const titleLarge = TextStyle(
     fontFamily: _font,
     fontSize: 22,
