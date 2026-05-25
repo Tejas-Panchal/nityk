@@ -22,7 +22,7 @@ class NtkAppBar extends StatelessWidget {
     return Container(
       height: height + topPadding,
       padding: EdgeInsets.only(top: topPadding),
-      color: backgroundColor ?? NtkColors.background,
+      color: backgroundColor ?? NtkColors.accentContainer,
       child: Stack(
         children: [
           // Title — truly centered

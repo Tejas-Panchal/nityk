@@ -20,9 +20,14 @@ class NtkColors {
   static const textHint = Color(0xFF938F99);
   static const textDisabled = Color(0xFF6E6A73);
   // Interactive
-  static const accent = Color(0xFFD0A9FF);
-  static const accentContainer = Color(0xFF4F006E);
-  static const onAccent = Color(0xFFFFFFFF);
+  static const accentDim = Color(0xFF691B88); // Muted accent
+  static const accent = Color(0xFFD0A9FF); // Main accent (current)
+  static const accentBright = Color(0xFFE8CCFF); // Bright highlight
+  static const accentContainer = Color(0xFF4F006E); // Container (current)
+  static const accentContainerDim = Color(0xFF3A0050); // Darker container
+  static const accentContainerLight = Color(0xFF6A1B8A); // Lighter container
+  static const onAccent = Color(0xFFFFFFFF); // Text on accent (current)
+  static const onAccentContainer = Color(0xFFE6D0F0); // Text on container
   // Status
   static const success = Color(0xFF4CAF50);
   static const warning = Color(0xFFFFC107);
