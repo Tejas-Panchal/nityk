@@ -2,11 +2,9 @@ import 'package:flutter/widgets.dart';
 import 'package:nityk/theme/theme.dart';
 import 'package:nityk/main_navigation.dart';
 import 'package:nityk/screens/screens.dart';
-import 'package:flutter/services.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const NitykApp());
 }
 

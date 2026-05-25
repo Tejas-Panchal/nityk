@@ -14,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   Timer? _timer;
-  String _time = '';
   String _date = '';
   @override
   void initState() {
@@ -28,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _update() {
     setState(() {
-      _time = DateTimeUtils.time();
       _date = DateTimeUtils.dateFull();
     });
   }

@@ -39,9 +39,14 @@ class NtkColors {
   static const priorityMedium = Color(0xFFFFC107);
   static const priorityLow = Color(0xFFA8DAB5);
   // Borders & dividers
-  static const border = Color(0xFF49454F);
-  static const divider = Color(0xFF3A3840);
+  static const border = Color(0xFFE8CCFF);
+  static const divider = Color(0xFFE8CCFF);
+  static Border get standardBorder =>
+      Border.all(color: NtkColors.border, width: 1);
   // Overlay
   static const scrim = Color(0x99000000);
   static const shimmer = Color(0x1AFFFFFF);
+  // button
+  static const deleteButt = Color(0xFFB71C1C);
+  static const editButt = Color(0xFF0277BD);
 }

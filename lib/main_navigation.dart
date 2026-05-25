@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:nityk/theme/theme.dart';
 import 'package:nityk/widgets/widgets.dart';
@@ -15,9 +16,9 @@ class MainNavigationScreen extends StatefulWidget {
     required this.tabBuilders,
     this.destinations = const [
       NtkBottomNavDestination(label: 'Home', icon: NtkIcons.home),
-      NtkBottomNavDestination(label: 'Habits', icon: NtkIcons.add),
+      NtkBottomNavDestination(label: 'Habits', icon: NtkIcons.habit),
       NtkBottomNavDestination(label: 'Tasks', icon: NtkIcons.tasks),
-      NtkBottomNavDestination(label: 'Logs', icon: NtkIcons.add),
+      NtkBottomNavDestination(label: 'Logs', icon: NtkIcons.log),
     ],
   });
   @override
@@ -25,11 +26,22 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  final _tasksKey = GlobalKey<TasksScreenState>();
+  late final List<Widget> _tabPages;
   int _currentIndex = 0;
   bool _isAddOpen = false;
+  Timer? _addTimer;
   bool _showStats = false;
+  bool _showAddTask = false;
   String? _pushedTitle;
   final List<Widget> _screenStack = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabPages = widget.tabBuilders.map((b) => b(pushScreen)).toList();
+    _tabPages[2] = TasksScreen(key: _tasksKey, push: pushScreen);
+  }
 
   void pushScreen(Widget screen, {String title = ''}) {
     setState(() {
@@ -39,21 +51,43 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void goHome() {
+    _addTimer?.cancel();
     setState(() {
       _screenStack.clear();
       _pushedTitle = null;
       _showStats = false;
+      _showAddTask = false;
       _currentIndex = 0;
     });
   }
 
   void popSettings() {
     if (_screenStack.isNotEmpty) {
+      _addTimer?.cancel();
       setState(() {
         _screenStack.removeLast();
         _pushedTitle = null;
       });
     }
+  }
+
+  void _toggleAddBar() {
+    if (_isAddOpen) {
+      _addTimer?.cancel();
+      setState(() => _isAddOpen = false);
+    } else {
+      _addTimer?.cancel();
+      setState(() => _isAddOpen = true);
+      _addTimer = Timer(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _isAddOpen = false);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _addTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -130,7 +164,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             else if (_showStats)
               StatsScreen(push: pushScreen)
             else
-              widget.tabBuilders[_currentIndex](pushScreen),
+              IndexedStack(
+                index: _currentIndex,
+                children: _tabPages,
+              ),
+            if (_isAddOpen && _pushedTitle != 'Settings')
+              GestureDetector(
+                onTap: () {
+                  _addTimer?.cancel();
+                  setState(() => _isAddOpen = false);
+                },
+                child: Container(),
+              ),
             if (_isAddOpen && _pushedTitle != 'Settings')
               Positioned(
                 left: 0,
@@ -142,22 +187,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(color: NtkColors.surface),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _ActionItem(
                             label: 'Tasks',
                             icon: NtkIcons.tasks,
+                            onTap: () {
+                              _addTimer?.cancel();
+                              setState(() {
+                                _isAddOpen = false;
+                                _showAddTask = true;
+                              });
+                            },
+                          ),
+                          _ActionItem(
+                            label: 'Add Habit',
+                            icon: NtkIcons.habit,
                             onTap: null,
                           ),
                           _ActionItem(
-                            label: 'Edit',
-                            icon: NtkIcons.edit,
-                            onTap: null,
-                          ),
-                          _ActionItem(
-                            label: 'Check',
-                            icon: NtkIcons.check,
+                            label: 'Add Log',
+                            icon: NtkIcons.log,
                             onTap: null,
                           ),
                         ],
@@ -166,6 +217,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ),
                 ),
               ),
+          if (_showAddTask)
+            NtkTaskDialog(
+              onClose: () {
+                _tasksKey.currentState?.loadTasks();
+                setState(() => _showAddTask = false);
+              },
+            ),
           ],
         ),
         bottomNav: hasPushed && _pushedTitle == 'Settings'
@@ -173,16 +231,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             : NtkBottomNav(
                 selectedIndex: _showStats ? -1 : _currentIndex,
                 onDestinationSelected: (index) {
+                  _addTimer?.cancel();
                   setState(() {
                     _currentIndex = index;
                     _showStats = false;
+                    _isAddOpen = false;
+                    _showAddTask = false;
                   });
                 },
                 destinations: widget.destinations,
                 isAddOpen: _isAddOpen,
-                onAddPressed: () {
-                  setState(() => _isAddOpen = !_isAddOpen);
-                },
+                onAddPressed: _toggleAddBar,
               ),
       ),
     );

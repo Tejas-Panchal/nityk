@@ -13,7 +13,11 @@ enum NtkIcons {
   check,
   close,
   edit,
-  delete;
+  delete,
+  taskRemaining,
+  taskCompleted,
+  habit,
+  log;
 
   String get path => 'assets/icons/icon_$name.png';
 }
