@@ -1,17 +1,19 @@
-# nityk
+# Nityk
 
-A new Flutter project.
+Fully custom UI Task Management Android app built with Flutter.
 
-## Getting Started
+## UI
 
-This project is a starting point for a Flutter application.
+<div align='center'>
+<img src='./assets/ui/home_screen.jpg' alt='home_screen' width='33%'><img src='./assets/ui/task_dialog.jpg' alt='task_dialog' width='33%'><img src='./assets/ui/tasks_screen.jpg' alt='tasks_screen' width='33%'>
+</div>
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- Task Management
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech
+
+- Flutter 3.41.2, Dart 3.11, Android min API 29
+- `sqflite` for local persistence
+- No Material, no Navigator — custom widgets and screen stack
