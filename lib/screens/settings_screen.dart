@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/widgets/widgets.dart';
+import '../widgets/widgets.dart';
+import '../utils/utils.dart';
 
 class SettingsScreen extends StatefulWidget {
   final void Function(Widget) push;
@@ -9,6 +10,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  String _selectedSort = 'New->Old';
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -23,7 +25,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         NtkSettingsSection(
           title: 'Tasks',
-          children: [NtkSettingsTile(label: 'Sort')],
+          children: [
+            NtkSettingsTile.option(
+              label: 'Sort',
+              options: [
+                'Grouped',
+                'Old->New',
+                'New->Old',
+                'temp1',
+                'temp2',
+                'temp3',
+              ],
+              selected: _selectedSort,
+              onChanged: (v) => setState(() => _selectedSort = v),
+            ),
+          ],
         ),
         NtkSettingsSection(
           title: 'Data',
@@ -35,7 +51,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         NtkSettingsSection(
           title: 'About',
           children: [
-            NtkSettingsTile(label: 'Version', trailing: Text('1.0.0')),
+            NtkSettingsTile(
+              label: 'Version',
+              trailing: Text(AppConstants.version),
+            ),
           ],
         ),
       ],

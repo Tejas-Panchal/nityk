@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/widgets/widgets.dart';
-import 'package:nityk/screens/screens.dart';
+import './theme/theme.dart';
+import './widgets/widgets.dart';
+import './screens/screens.dart';
 
 typedef ScreenBuilder = Widget Function(void Function(Widget) push);
 
@@ -164,10 +164,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             else if (_showStats)
               StatsScreen(push: pushScreen)
             else
-              IndexedStack(
-                index: _currentIndex,
-                children: _tabPages,
-              ),
+              IndexedStack(index: _currentIndex, children: _tabPages),
             if (_isAddOpen && _pushedTitle != 'Settings')
               GestureDetector(
                 onTap: () {
@@ -217,13 +214,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ),
                 ),
               ),
-          if (_showAddTask)
-            NtkTaskDialog(
-              onClose: () {
-                _tasksKey.currentState?.loadTasks();
-                setState(() => _showAddTask = false);
-              },
-            ),
+            if (_showAddTask)
+              NtkTaskDialog(
+                onClose: () {
+                  _tasksKey.currentState?.loadTasks();
+                  setState(() => _showAddTask = false);
+                },
+              ),
           ],
         ),
         bottomNav: hasPushed && _pushedTitle == 'Settings'

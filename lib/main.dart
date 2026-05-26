@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/main_navigation.dart';
-import 'package:nityk/screens/screens.dart';
+import './theme/theme.dart';
+import './main_navigation.dart';
+import './screens/screens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ class NitykApp extends StatelessWidget {
         home: MainNavigationScreen(
           title: 'Nityk',
           tabBuilders: [
-            (push) => HomeScreen(title: 'Nityk', push: push),
+            (push) => HomeScreen(push: push),
             (push) => HabitsScreen(push: push),
             (push) => TasksScreen(push: push),
             (push) => LogsScreen(push: push),

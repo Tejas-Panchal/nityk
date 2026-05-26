@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/widgets/widgets.dart';
-import 'package:nityk/database/database_helper.dart';
-import 'package:nityk/models/models.dart';
+import '../theme/theme.dart';
+import '../widgets/widgets.dart';
+import '../database/database_helper.dart';
+import '../models/models.dart';
 
 class NtkTaskDialog extends StatefulWidget {
   final VoidCallback onClose;

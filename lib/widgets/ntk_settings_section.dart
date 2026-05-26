@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/widgets/widgets.dart';
+import '../theme/theme.dart';
+import '../widgets/widgets.dart';
 
 class NtkSettingsSection extends StatefulWidget {
   final String title;
@@ -72,7 +72,7 @@ class _NtkSettingsSectionState extends State<NtkSettingsSection> {
             ),
             child: Column(children: separated),
           ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
       ],
     );
   }

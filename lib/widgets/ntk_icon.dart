@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
+import '../theme/theme.dart';
 
 // Enum of icon names matching PNG filenames
 enum NtkIcons {

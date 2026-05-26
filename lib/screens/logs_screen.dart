@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
+import '../theme/theme.dart';
 
 class LogsScreen extends StatefulWidget {
   final void Function(Widget) push;

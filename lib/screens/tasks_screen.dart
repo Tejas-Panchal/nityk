@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/widgets/widgets.dart';
-import 'package:nityk/database/database_helper.dart';
-import 'package:nityk/models/models.dart';
+import '../theme/theme.dart';
+import '../widgets/widgets.dart';
+import '../database/database_helper.dart';
+import '../models/models.dart';
 
 class TasksScreen extends StatefulWidget {
   final void Function(Widget) push;
@@ -40,9 +40,7 @@ class TasksScreenState extends State<TasksScreen> {
         if (_loading)
           const Center(child: Text('Loading...'))
         else if (_tasks.isEmpty)
-          const Center(
-            child: Text('No tasks yet', style: NtkText.bodyMedium),
-          )
+          const Center(child: Text('No tasks yet', style: NtkText.bodyMedium))
         else
           ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/utils/utils.dart';
+import '../theme/theme.dart';
+import '../utils/utils.dart';
 
 class ClockWidget extends StatefulWidget {
   const ClockWidget({super.key});

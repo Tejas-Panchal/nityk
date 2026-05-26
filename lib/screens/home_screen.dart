@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/utils/datetime_utils.dart';
+import '../theme/theme.dart';
+import '../utils/utils.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String title;
   final void Function(Widget) push;
-  const HomeScreen({super.key, required this.title, required this.push});
+  const HomeScreen({super.key, required this.push});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -57,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (showFull)
-                  Text(widget.title, style: NtkText.titleExtraLarge),
+                  Text(AppConstants.appName, style: NtkText.titleExtraLarge),
                 Text(DateTimeUtils.time(), style: NtkText.style(fontSize)),
                 if (showFull)
                   Padding(

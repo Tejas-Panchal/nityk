@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
-import 'package:nityk/theme/theme.dart';
-import 'package:nityk/widgets/widgets.dart';
-import 'package:nityk/models/models.dart';
+import '../theme/theme.dart';
+import '../widgets/widgets.dart';
+import '../models/models.dart';
 
 class NtkTaskTile extends StatefulWidget {
   final Task task;
