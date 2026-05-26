@@ -50,6 +50,7 @@ class _NtkTaskTileState extends State<NtkTaskTile> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
+        color: NtkColors.surface,
         border: Border(bottom: BorderSide(color: NtkColors.border, width: 1)),
       ),
       child: Row(
@@ -133,8 +134,8 @@ class _NtkTaskTileState extends State<NtkTaskTile> {
                           color: task.priority == 1
                               ? NtkColors.priorityHigh
                               : task.priority == 3
-                                  ? NtkColors.priorityLow
-                                  : NtkColors.priorityMedium,
+                              ? NtkColors.priorityLow
+                              : NtkColors.priorityMedium,
                         ),
                       ),
                     ),

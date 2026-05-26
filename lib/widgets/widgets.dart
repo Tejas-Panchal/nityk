@@ -6,3 +6,5 @@ export 'ntk_icon.dart';
 export 'ntk_text_field.dart';
 export 'ntk_task_dialog.dart';
 export 'ntk_task_tile.dart';
+export 'ntk_settings_section.dart';
+export 'ntk_settings_tile.dart';
