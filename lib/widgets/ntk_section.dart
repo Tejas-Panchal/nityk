@@ -2,19 +2,15 @@ import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 
-class NtkSettingsSection extends StatefulWidget {
+class NtkSection extends StatefulWidget {
   final String title;
   final List<Widget> children;
-  const NtkSettingsSection({
-    super.key,
-    required this.title,
-    required this.children,
-  });
+  const NtkSection({super.key, required this.title, required this.children});
   @override
-  State<NtkSettingsSection> createState() => _NtkSettingsSectionState();
+  State<NtkSection> createState() => _NtkSectionState();
 }
 
-class _NtkSettingsSectionState extends State<NtkSettingsSection> {
+class _NtkSectionState extends State<NtkSection> {
   bool _isOpen = true;
   @override
   Widget build(BuildContext context) {

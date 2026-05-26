@@ -2,9 +2,12 @@ import 'package:flutter/widgets.dart';
 import './theme/theme.dart';
 import './main_navigation.dart';
 import './screens/screens.dart';
+import './services/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await TaskService.instance.load();
+  await SettingsService.instance.load();
   runApp(const NitykApp());
 }
 

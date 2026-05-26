@@ -9,6 +9,14 @@ class NtkSettingsTile extends StatefulWidget {
   final List<String>? options;
   final String? selected;
   final ValueChanged<String>? onChanged;
+  final bool? toggleValue;
+  final ValueChanged<bool>? onToggleChanged;
+  final String? textValue;
+  final ValueChanged<String>? onTextChanged;
+  final String? hint;
+  final bool? isRisky;
+  final String? secondaryLabel;
+  final String? description;
 
   const NtkSettingsTile({
     super.key,
@@ -17,7 +25,15 @@ class NtkSettingsTile extends StatefulWidget {
     this.onTap,
   }) : options = null,
        selected = null,
-       onChanged = null;
+       onChanged = null,
+       toggleValue = null,
+       onToggleChanged = null,
+       textValue = null,
+       onTextChanged = null,
+       hint = null,
+       isRisky = null,
+       secondaryLabel = null,
+       description = null;
 
   const NtkSettingsTile.option({
     super.key,
@@ -26,7 +42,89 @@ class NtkSettingsTile extends StatefulWidget {
     required this.selected,
     required this.onChanged,
   }) : trailing = null,
-       onTap = null;
+       onTap = null,
+       toggleValue = null,
+       onToggleChanged = null,
+       textValue = null,
+       onTextChanged = null,
+       hint = null,
+       isRisky = null,
+       secondaryLabel = null,
+       description = null;
+
+  const NtkSettingsTile.toggle({
+    super.key,
+    required this.label,
+    required bool toggleValue,
+    required ValueChanged<bool> onToggleChanged,
+  }) : trailing = null,
+       onTap = null,
+       options = null,
+       selected = null,
+       onChanged = null,
+       toggleValue = toggleValue,
+       onToggleChanged = onToggleChanged,
+       textValue = null,
+       onTextChanged = null,
+       hint = null,
+       isRisky = null,
+       secondaryLabel = null,
+       description = null;
+
+  const NtkSettingsTile.text({
+    super.key,
+    required this.label,
+    required String textValue,
+    required ValueChanged<String> onTextChanged,
+    this.hint = '',
+  }) : trailing = null,
+       onTap = null,
+       options = null,
+       selected = null,
+       onChanged = null,
+       toggleValue = null,
+       onToggleChanged = null,
+       textValue = textValue,
+       onTextChanged = onTextChanged,
+       isRisky = null,
+       secondaryLabel = null,
+       description = null;
+
+  const NtkSettingsTile.button({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.isRisky = false,
+    String secondaryLabel = '',
+  }) : trailing = null,
+       options = null,
+       selected = null,
+       onChanged = null,
+       toggleValue = null,
+       onToggleChanged = null,
+       textValue = null,
+       onTextChanged = null,
+       hint = null,
+       secondaryLabel = secondaryLabel,
+       description = null;
+
+  const NtkSettingsTile.banner({
+    super.key,
+    required this.label,
+    required String secondaryLabel,
+    this.description,
+  }) : trailing = null,
+       onTap = null,
+       options = null,
+       selected = null,
+       onChanged = null,
+       toggleValue = null,
+       onToggleChanged = null,
+       textValue = null,
+       onTextChanged = null,
+       hint = null,
+       isRisky = null,
+       secondaryLabel = secondaryLabel;
 
   @override
   State<NtkSettingsTile> createState() => _NtkSettingsTileState();
@@ -34,11 +132,78 @@ class NtkSettingsTile extends StatefulWidget {
 
 class _NtkSettingsTileState extends State<NtkSettingsTile> {
   bool _isOpen = false;
+  bool _isEditing = false;
+  bool _showConfirm = false;
+  late TextEditingController _textController;
+  late FocusNode _textFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController();
+    _textFocusNode = FocusNode();
+    _textFocusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _textFocusNode.removeListener(_onFocusChange);
+    _textFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (!_textFocusNode.hasFocus && _isEditing) _commitText();
+  }
+
+  void _commitText() {
+    widget.onTextChanged?.call(_textController.text);
+    setState(() => _isEditing = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     if (widget.options != null) return _buildOption();
+    if (widget.toggleValue != null) return _buildToggle();
+    if (widget.textValue != null) return _buildText();
+    if (widget.isRisky != null) return _buildButton();
+    if (widget.secondaryLabel != null) return _buildBanner();
     return _buildDefault();
+  }
+
+  Widget _buildBanner() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _isOpen = !_isOpen),
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(widget.label, style: NtkText.headlineMedium),
+                ),
+                Text(widget.secondaryLabel!, style: NtkText.bodyMedium),
+              ],
+            ),
+          ),
+        ),
+        if (_isOpen && widget.description != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 500),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: SingleChildScrollView(
+                child: Text(widget.description!, style: NtkText.bodyMedium),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildDefault() {
@@ -133,6 +298,182 @@ class _NtkSettingsTileState extends State<NtkSettingsTile> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildToggle() {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(child: Text(widget.label, style: NtkText.headlineMedium)),
+          _ToggleWidget(
+            value: widget.toggleValue!,
+            onChanged: widget.onToggleChanged!,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            if (widget.isRisky!) {
+              setState(() => _showConfirm = !_showConfirm);
+            } else {
+              widget.onTap?.call();
+            }
+          },
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(widget.label, style: NtkText.headlineMedium),
+                ),
+                if (widget.secondaryLabel!.isNotEmpty)
+                  Text(widget.secondaryLabel!, style: NtkText.bodyMedium),
+              ],
+            ),
+          ),
+        ),
+        if (_showConfirm)
+          GestureDetector(
+            onTap: () => setState(() => _showConfirm = false),
+            child: Container(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: NtkColors.surfaceHigh,
+                border: Border(bottom: BorderSide(color: NtkColors.border)),
+              ),
+              child: Row(
+                children: [
+                  Text('Are you sure?', style: NtkText.bodyMedium),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => setState(() => _showConfirm = false),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('No', style: NtkText.bodyLarge),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      widget.onTap?.call();
+                      setState(() => _showConfirm = false);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        'Yes',
+                        style: NtkText.bodyLarge.copyWith(
+                          color: NtkColors.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildText() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            if (_isEditing) {
+              _commitText();
+            } else {
+              _textController.text = widget.textValue!;
+              setState(() => _isEditing = true);
+              _textFocusNode.requestFocus();
+            }
+          },
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(widget.label, style: NtkText.headlineMedium),
+                ),
+                Text(
+                  widget.textValue!.isEmpty ? widget.hint! : widget.textValue!,
+                  style: NtkText.bodyMedium.copyWith(
+                    color: widget.textValue!.isEmpty
+                        ? NtkColors.textHint
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isEditing)
+          Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: NtkColors.surfaceHigh,
+              border: Border(bottom: BorderSide(color: NtkColors.border)),
+            ),
+            child: Align(
+              child: EditableText(
+                controller: _textController,
+                focusNode: _textFocusNode,
+                style: NtkText.bodyMedium,
+                cursorColor: NtkColors.accent,
+                backgroundCursorColor: NtkColors.textHint,
+                onSubmitted: (_) => _commitText(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ToggleWidget extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _ToggleWidget({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 40,
+        height: 24,
+        decoration: BoxDecoration(
+          color: value ? NtkColors.accent : NtkColors.surfaceHigh,
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            margin: const EdgeInsets.all(4),
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: value ? NtkColors.onAccent : NtkColors.textSecondary,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

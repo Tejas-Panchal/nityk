@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import './theme/theme.dart';
 import './widgets/widgets.dart';
 import './screens/screens.dart';
+import './services/services.dart';
 
 typedef ScreenBuilder = Widget Function(void Function(Widget) push);
 
@@ -26,7 +27,6 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  final _tasksKey = GlobalKey<TasksScreenState>();
   late final List<Widget> _tabPages;
   int _currentIndex = 0;
   bool _isAddOpen = false;
@@ -40,7 +40,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _tabPages = widget.tabBuilders.map((b) => b(pushScreen)).toList();
-    _tabPages[2] = TasksScreen(key: _tasksKey, push: pushScreen);
   }
 
   void pushScreen(Widget screen, {String title = ''}) {
@@ -217,7 +216,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             if (_showAddTask)
               NtkTaskDialog(
                 onClose: () {
-                  _tasksKey.currentState?.loadTasks();
+                  TaskService.instance.load();
                   setState(() => _showAddTask = false);
                 },
               ),

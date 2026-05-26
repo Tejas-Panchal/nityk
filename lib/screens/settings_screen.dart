@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../widgets/widgets.dart';
 import '../utils/utils.dart';
+import '../services/services.dart';
 
 class SettingsScreen extends StatefulWidget {
   final void Function(Widget) push;
@@ -10,50 +11,91 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _selectedSort = 'New->Old';
+  String _dateFormat = 'DD-MM-YYYY';
+
+  @override
+  void initState() {
+    super.initState();
+    SettingsService.instance.addListener(_onChanged);
+  }
+
+  @override
+  void dispose() {
+    SettingsService.instance.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() => setState(() {});
   @override
   Widget build(BuildContext context) {
+    final s = SettingsService.instance;
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       children: [
-        NtkSettingsSection(
+        NtkSection(
           title: 'General',
           children: [
-            NtkSettingsTile(label: 'Dark Mode', trailing: Text('On')),
-            NtkSettingsTile(label: 'Date Format', trailing: Text('DD-MM-YYYY')),
+            NtkSettingsTile.toggle(
+              label: 'Dark Mode',
+              toggleValue: s.darkMode,
+              onToggleChanged: (v) => s.darkMode = v,
+            ),
+            NtkSettingsTile.toggle(
+              label: 'Use 24h',
+              toggleValue: s.use24h,
+              onToggleChanged: (v) => s.use24h = v,
+            ),
+            NtkSettingsTile.text(
+              label: 'Date Format',
+              textValue: _dateFormat,
+              onTextChanged: (v) => setState(() => _dateFormat = v),
+            ),
           ],
         ),
-        NtkSettingsSection(
+        NtkSection(
           title: 'Tasks',
           children: [
             NtkSettingsTile.option(
               label: 'Sort',
-              options: [
-                'Grouped',
-                'Old->New',
-                'New->Old',
-                'temp1',
-                'temp2',
-                'temp3',
-              ],
-              selected: _selectedSort,
-              onChanged: (v) => setState(() => _selectedSort = v),
+              options: const ['Grouped', 'Old->New', 'New->Old'],
+              selected: s.sortOrder,
+              onChanged: (v) => s.sortOrder = v,
             ),
           ],
         ),
-        NtkSettingsSection(
+        NtkSection(
           title: 'Data',
           children: [
-            NtkSettingsTile(label: 'Delete all completed'),
-            NtkSettingsTile(label: 'Reset all data'),
+            NtkSettingsTile.button(label: 'Delete all completed', onTap: () {}),
+            NtkSettingsTile.button(
+              label: 'Reset Settings',
+              onTap: () {},
+              isRisky: true,
+            ),
+            NtkSettingsTile.button(
+              label: 'Reset Tasks',
+              onTap: () {},
+              isRisky: true,
+            ),
+            NtkSettingsTile.button(
+              label: 'Reset all Data',
+              onTap: () {},
+              isRisky: true,
+            ),
           ],
         ),
-        NtkSettingsSection(
+        NtkSection(
           title: 'About',
           children: [
-            NtkSettingsTile(
+            NtkSettingsTile.banner(
+              label: 'App Name',
+              secondaryLabel: 'Nityk',
+              description:
+                  'A customizable habit tracker and todo app.\n\nBuilt with Flutter.',
+            ),
+            NtkSettingsTile.banner(
               label: 'Version',
-              trailing: Text(AppConstants.version),
+              secondaryLabel: AppConstants.version,
             ),
           ],
         ),

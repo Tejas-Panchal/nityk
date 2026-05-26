@@ -14,22 +14,48 @@ class DatabaseHelper {
 
   Future<Database> _initDB() async {
     final path = join(await getDatabasesPath(), 'nityk.db');
-    return await openDatabase(path, version: 1, onCreate: _createTables);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createTables,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   Future<void> _createTables(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        priority INTEGER NOT NULL DEFAULT 2,
-        is_completed INTEGER NOT NULL DEFAULT 0,
-        due_date TEXT,
-        created_at TEXT NOT NULL,
-        completed_at TEXT
+    CREATE TABLE tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      priority INTEGER NOT NULL DEFAULT 2,
+      is_completed INTEGER NOT NULL DEFAULT 0,
+      due_date TEXT,
+      created_at TEXT NOT NULL,
+      completed_at TEXT
+    )
+  ''');
+    await db.execute('''
+    CREATE TABLE settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      sort_order TEXT NOT NULL DEFAULT 'New->Old',
+      dark_mode INTEGER NOT NULL DEFAULT 1,
+      use_24h INTEGER NOT NULL DEFAULT 1
+    )
+  ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        sort_order TEXT NOT NULL DEFAULT 'New->Old',
+        dark_mode INTEGER NOT NULL DEFAULT 1,
+        use_24h INTEGER NOT NULL DEFAULT 1
       )
     ''');
+    }
   }
 
   // CRUD methods
@@ -75,5 +101,24 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<Settings> getSettings() async {
+    final db = await database;
+    final maps = await db.query('settings', where: 'id = 1');
+    if (maps.isEmpty) {
+      final defaults = const Settings();
+      await db.insert('settings', {'id': 1, ...defaults.toMap()});
+      return defaults;
+    }
+    return Settings.fromMap(maps.first);
+  }
+
+  Future<void> saveSettings(Settings settings) async {
+    final db = await database;
+    await db.update('settings', {
+      'id': 1,
+      ...settings.toMap(),
+    }, where: 'id = 1');
   }
 }
