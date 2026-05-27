@@ -29,15 +29,85 @@ class _TasksScreenState extends State<TasksScreen> {
 
   void _onChanged() => setState(() {});
 
+  Widget _buildTaskTile(Task task) {
+    return NtkTaskTile(
+      task: task,
+      onToggle: () async => TaskService.instance.toggleComplete(task.id!),
+      onEdit: () {
+        setState(() {
+          _editingTask = task;
+          _showEditDialog = true;
+        });
+      },
+      onDelete: () async => TaskService.instance.delete(task.id!),
+    );
+  }
+
+  List<Task> _sortFlat(List<Task> tasks, String sortOrder) {
+    final sorted = List<Task>.from(tasks);
+    switch (sortOrder) {
+      case 'Old->New':
+        sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      case 'New->Old':
+        sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+    return sorted;
+  }
+
+  List<List<Task>> _groupByPriority(List<Task> tasks) {
+    final high = tasks.where((t) => t.priority == 1).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final medium = tasks.where((t) => t.priority == 2).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final low = tasks.where((t) => t.priority == 3).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return [high, medium, low];
+  }
+
+  Color? _priorityColor(String label) {
+    return switch (label) {
+      'High' => NtkColors.priorityHighDark,
+      'Medium' => NtkColors.priorityMediumDark,
+      'Low' => NtkColors.priorityLowDark,
+      _ => null,
+    };
+  }
+
+  List<Widget> _buildGrouped(List<Task> tasks) {
+    final groups = _groupByPriority(tasks);
+    final labels = ['High', 'Medium', 'Low'];
+    final sections = <Widget>[];
+    for (int i = 0; i < 3; i++) {
+      if (groups[i].isNotEmpty) {
+        sections.add(
+          NtkSection(
+            backgroundColor: _priorityColor(labels[i]),
+            title: '${labels[i]} (${groups[i].length})',
+            isOpen: true,
+            children: groups[i].map(_buildTaskTile).toList(),
+          ),
+        );
+      }
+    }
+    return sections;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sortOrder = SettingsService.instance.sortOrder;
     final s = TaskService.instance;
     final incomplete = s.incompleteTasks;
     final completed = s.completedTasks;
+    final sortedCompleted = List<Task>.from(completed)
+      ..sort((a, b) {
+        final aTime = a.completedAt ?? a.createdAt;
+        final bTime = b.completedAt ?? b.createdAt;
+        return bTime.compareTo(aTime);
+      });
 
     if (incomplete.isEmpty && completed.isEmpty) {
       return const Center(
-        child: Text('No tasks yet', style: NtkText.bodyMedium),
+        child: Text('No tasks yet', style: NtkText.bodyLarge),
       );
     }
 
@@ -46,38 +116,17 @@ class _TasksScreenState extends State<TasksScreen> {
         ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: [
-            ...incomplete.map(
-              (task) => NtkTaskTile(
-                task: task,
-                onToggle: () async => s.toggleComplete(task.id!),
-                onEdit: () {
-                  setState(() {
-                    _editingTask = task;
-                    _showEditDialog = true;
-                  });
-                },
-                onDelete: () async => s.delete(task.id!),
-              ),
-            ),
-            const SizedBox(height: 8),
+            if (sortOrder == 'Grouped')
+              ..._buildGrouped(incomplete)
+            else
+              ..._sortFlat(incomplete, sortOrder).map(_buildTaskTile),
+
             if (completed.isNotEmpty)
               NtkSection(
+                key: const ValueKey('completed'),
                 title: 'Completed (${completed.length})',
-                children: completed
-                    .map(
-                      (task) => NtkTaskTile(
-                        task: task,
-                        onToggle: () async => s.toggleComplete(task.id!),
-                        onEdit: () {
-                          setState(() {
-                            _editingTask = task;
-                            _showEditDialog = true;
-                          });
-                        },
-                        onDelete: () async => s.delete(task.id!),
-                      ),
-                    )
-                    .toList(),
+                isOpen: false,
+                children: sortedCompleted.map(_buildTaskTile).toList(),
               ),
           ],
         ),

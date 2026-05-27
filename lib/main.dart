@@ -6,8 +6,8 @@ import './services/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await TaskService.instance.load();
   await SettingsService.instance.load();
+  TaskService.instance.load();
   runApp(const NitykApp());
 }
 

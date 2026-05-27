@@ -38,6 +38,9 @@ class NtkColors {
   static const priorityHigh = Color(0xFFFFB4AB);
   static const priorityMedium = Color(0xFFFFC107);
   static const priorityLow = Color(0xFFA8DAB5);
+  static const priorityHighDark = Color(0xFF5C2525);
+  static const priorityMediumDark = Color(0xFF5C4A0A);
+  static const priorityLowDark = Color(0xFF1A4A28);
   // Borders & dividers
   static const border = Color(0xFFE8CCFF);
   static const divider = Color(0xFFE8CCFF);

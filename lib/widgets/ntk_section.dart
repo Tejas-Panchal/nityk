@@ -4,14 +4,29 @@ import '../widgets/widgets.dart';
 
 class NtkSection extends StatefulWidget {
   final String title;
+  final bool isOpen;
+  final Color? backgroundColor;
   final List<Widget> children;
-  const NtkSection({super.key, required this.title, required this.children});
+  const NtkSection({
+    super.key,
+    required this.title,
+    this.isOpen = true,
+    this.backgroundColor = NtkColors.accentContainerLight,
+    required this.children,
+  });
   @override
   State<NtkSection> createState() => _NtkSectionState();
 }
 
 class _NtkSectionState extends State<NtkSection> {
   bool _isOpen = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _isOpen = widget.isOpen;
+  }
+
   @override
   Widget build(BuildContext context) {
     // separate children with dividers (same as now)
@@ -32,9 +47,7 @@ class _NtkSectionState extends State<NtkSection> {
             height: 32,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: _isOpen
-                  ? NtkColors.surfaceHigh
-                  : NtkColors.accentContainerLight,
+              color: _isOpen ? NtkColors.surfaceHigh : widget.backgroundColor,
             ),
             child: Row(
               children: [

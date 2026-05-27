@@ -28,78 +28,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _onChanged() => setState(() {});
   @override
   Widget build(BuildContext context) {
-    final s = SettingsService.instance;
-    return ListView(
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      children: [
-        NtkSection(
-          title: 'General',
-          children: [
-            NtkSettingsTile.toggle(
-              label: 'Dark Mode',
-              toggleValue: s.darkMode,
-              onToggleChanged: (v) => s.darkMode = v,
-            ),
-            NtkSettingsTile.toggle(
-              label: 'Use 24h',
-              toggleValue: s.use24h,
-              onToggleChanged: (v) => s.use24h = v,
-            ),
-            NtkSettingsTile.text(
-              label: 'Date Format',
-              textValue: _dateFormat,
-              onTextChanged: (v) => setState(() => _dateFormat = v),
-            ),
-          ],
-        ),
-        NtkSection(
-          title: 'Tasks',
-          children: [
-            NtkSettingsTile.option(
-              label: 'Sort',
-              options: const ['Grouped', 'Old->New', 'New->Old'],
-              selected: s.sortOrder,
-              onChanged: (v) => s.sortOrder = v,
-            ),
-          ],
-        ),
-        NtkSection(
-          title: 'Data',
-          children: [
-            NtkSettingsTile.button(label: 'Delete all completed', onTap: () {}),
-            NtkSettingsTile.button(
-              label: 'Reset Settings',
-              onTap: () {},
-              isRisky: true,
-            ),
-            NtkSettingsTile.button(
-              label: 'Reset Tasks',
-              onTap: () {},
-              isRisky: true,
-            ),
-            NtkSettingsTile.button(
-              label: 'Reset all Data',
-              onTap: () {},
-              isRisky: true,
-            ),
-          ],
-        ),
-        NtkSection(
-          title: 'About',
-          children: [
-            NtkSettingsTile.banner(
-              label: 'App Name',
-              secondaryLabel: 'Nityk',
-              description:
-                  'A customizable habit tracker and todo app.\n\nBuilt with Flutter.',
-            ),
-            NtkSettingsTile.banner(
-              label: 'Version',
-              secondaryLabel: AppConstants.version,
-            ),
-          ],
-        ),
-      ],
+      itemCount: 4,
+      itemBuilder: (context, index) {
+        final s = SettingsService.instance;
+        switch (index) {
+          case 0:
+            return NtkSection(
+              title: 'General',
+              children: [
+                NtkSettingsTile.toggle(
+                  label: 'Dark Mode',
+                  toggleValue: s.darkMode,
+                  onToggleChanged: (v) => s.darkMode = v,
+                ),
+                NtkSettingsTile.toggle(
+                  label: 'Use 24h',
+                  toggleValue: s.use24h,
+                  onToggleChanged: (v) => s.use24h = v,
+                ),
+                NtkSettingsTile.text(
+                  label: 'Date Format',
+                  textValue: _dateFormat,
+                  onTextChanged: (v) => setState(() => _dateFormat = v),
+                ),
+              ],
+            );
+          case 1:
+            return NtkSection(
+              title: 'Tasks',
+              children: [
+                NtkSettingsTile.option(
+                  label: 'Sort',
+                  options: const ['Grouped', 'Old->New', 'New->Old'],
+                  selected: s.sortOrder,
+                  onChanged: (v) => s.sortOrder = v,
+                ),
+              ],
+            );
+          case 2:
+            return NtkSection(
+              title: 'Data',
+              isOpen: false,
+              children: [
+                NtkSettingsTile.button(
+                  label: 'Delete all completed',
+                  onTap: () {},
+                ),
+                NtkSettingsTile.button(
+                  label: 'Reset Settings',
+                  onTap: () {},
+                  isRisky: true,
+                ),
+                NtkSettingsTile.button(
+                  label: 'Reset Tasks',
+                  onTap: () {},
+                  isRisky: true,
+                ),
+                NtkSettingsTile.button(
+                  label: 'Reset all Data',
+                  onTap: () {},
+                  isRisky: true,
+                ),
+              ],
+            );
+          case 3:
+            return NtkSection(
+              title: 'About',
+              isOpen: false,
+              children: [
+                NtkSettingsTile.banner(
+                  label: 'App Name',
+                  secondaryLabel: 'Nityk',
+                  description:
+                      'A customizable habit tracker and todo app.\n\nBuilt with Flutter.',
+                ),
+                NtkSettingsTile.banner(
+                  label: 'Version',
+                  secondaryLabel: AppConstants.version,
+                ),
+              ],
+            );
+          default:
+            return const SizedBox.shrink();
+        }
+      },
     );
   }
 }
