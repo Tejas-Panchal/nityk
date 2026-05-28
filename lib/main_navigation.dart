@@ -33,6 +33,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Timer? _addTimer;
   bool _showStats = false;
   bool _showAddTask = false;
+  bool _showAddLog = false;
   String? _pushedTitle;
   final List<Widget> _screenStack = [];
 
@@ -40,7 +41,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _tabPages = widget.tabBuilders.map((b) => b(pushScreen)).toList();
+    LogTimerService.instance.addListener(_onTimerChanged);
   }
+
+  void _onTimerChanged() => setState(() {});
 
   void pushScreen(Widget screen, {String title = ''}) {
     setState(() {
@@ -56,6 +60,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       _pushedTitle = null;
       _showStats = false;
       _showAddTask = false;
+      _showAddLog = false;
       _currentIndex = 0;
     });
   }
@@ -86,7 +91,34 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void dispose() {
     _addTimer?.cancel();
+    LogTimerService.instance.removeListener(_onTimerChanged);
     super.dispose();
+  }
+
+  List<Widget> _buildTimerPills(bool hasPushed) {
+    final timers = LogTimerService.instance.timers;
+    const pillHeight = 36.0;
+    const pillGap = 8.0;
+    const bottomOffset = 64.0; // above bottom nav (~56px + padding)
+    final pills = <Widget>[];
+    for (int i = 0; i < timers.length; i++) {
+      final t = timers[i];
+      pills.add(
+        Positioned(
+          right: 16,
+          bottom: bottomOffset + (i * (pillHeight + pillGap)),
+          child: NtkLogTimerPill(
+            title: t.title,
+            startedAt: t.startedAt,
+            onStop: () {
+              LogTimerService.instance.stop(t.logId);
+              LogService.instance.stopTimer(t.logId);
+            },
+          ),
+        ),
+      );
+    }
+    return pills;
   }
 
   @override
@@ -187,6 +219,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _ActionItem(
+                            label: 'Add Habit',
+                            icon: NtkIcons.habit,
+                            onTap: null,
+                          ),
+                          _ActionItem(
                             label: 'Tasks',
                             icon: NtkIcons.tasks,
                             onTap: () {
@@ -198,14 +235,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             },
                           ),
                           _ActionItem(
-                            label: 'Add Habit',
-                            icon: NtkIcons.habit,
-                            onTap: null,
-                          ),
-                          _ActionItem(
                             label: 'Add Log',
                             icon: NtkIcons.log,
-                            onTap: null,
+                            onTap: () {
+                              _addTimer?.cancel();
+                              setState(() {
+                                _isAddOpen = false;
+                                _showAddLog = true;
+                              });
+                            },
                           ),
                         ],
                       ),
@@ -220,6 +258,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   setState(() => _showAddTask = false);
                 },
               ),
+            if (_showAddLog)
+              NtkLogDialog(
+                isTimer: true,
+                onClose: () => setState(() => _showAddLog = false),
+              ),
+            // Timer pills
+            if (LogTimerService.instance.timers.isNotEmpty &&
+                !(hasPushed && _pushedTitle == 'Settings') &&
+                !_showAddTask &&
+                !_showAddLog)
+              ..._buildTimerPills(hasPushed),
           ],
         ),
         bottomNav: hasPushed && _pushedTitle == 'Settings'
@@ -233,6 +282,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     _showStats = false;
                     _isAddOpen = false;
                     _showAddTask = false;
+                    _showAddLog = false;
                   });
                 },
                 destinations: widget.destinations,

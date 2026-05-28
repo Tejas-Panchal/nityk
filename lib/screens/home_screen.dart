@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
 import '../utils/utils.dart';
+import '../services/services.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(Widget) push;
@@ -22,7 +23,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) _update();
     });
     _scrollController.addListener(() => setState(() {}));
+    LogTimerService.instance.addListener(_onTimerChanged);
   }
+
+  void _onTimerChanged() => setState(() {});
 
   void _update() {
     setState(() {
@@ -34,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _timer?.cancel();
     _scrollController.dispose();
+    LogTimerService.instance.removeListener(_onTimerChanged);
     super.dispose();
   }
 
@@ -70,7 +75,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: ListView(
             controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.fromLTRB(
+              16, 0, 16, LogTimerService.instance.bottomPillPadding,
+            ),
             children: [
               SizedBox(
                 height: maxHeight * 2,

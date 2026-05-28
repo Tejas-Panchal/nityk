@@ -90,4 +90,31 @@ class DateTimeUtils {
   static Stream<DateTime> tick() {
     return Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
   }
+
+  /// Parse "HH:MM" to minutes from midnight. Returns null if invalid.
+  static int? parseTime(String value) {
+    final parts = value.trim().split(':');
+    if (parts.length != 2) return null;
+    final h = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) {
+      return null;
+    }
+    return h * 60 + m;
+  }
+
+  /// Format minutes from midnight as "HH:MM"
+  static String formatTime(int minutes) {
+    final h = (minutes ~/ 60).toString().padLeft(2, '0');
+    final m = (minutes % 60).toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  /// Format a Duration as "XhYm" or just "Ym"
+  static String formatDuration(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    if (h > 0) return '${h}h${m}m';
+    return '${m}m';
+  }
 }

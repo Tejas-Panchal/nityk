@@ -195,6 +195,7 @@ class _NtkSettingsTileState extends State<NtkSettingsTile> {
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 500),
             child: Container(
+              color: NtkColors.surfaceHigh,
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: SingleChildScrollView(
@@ -349,10 +350,7 @@ class _NtkSettingsTileState extends State<NtkSettingsTile> {
             child: Container(
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: NtkColors.surfaceHigh,
-                border: Border(bottom: BorderSide(color: NtkColors.border)),
-              ),
+              decoration: BoxDecoration(color: NtkColors.surfaceHigh),
               child: Row(
                 children: [
                   Text('Are you sure?', style: NtkText.bodyMedium),
@@ -425,10 +423,7 @@ class _NtkSettingsTileState extends State<NtkSettingsTile> {
           Container(
             height: 40,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: NtkColors.surfaceHigh,
-              border: Border(bottom: BorderSide(color: NtkColors.border)),
-            ),
+            decoration: BoxDecoration(color: NtkColors.surfaceHigh),
             child: Align(
               child: EditableText(
                 controller: _textController,

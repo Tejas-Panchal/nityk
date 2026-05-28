@@ -19,15 +19,18 @@ class _TasksScreenState extends State<TasksScreen> {
   void initState() {
     super.initState();
     TaskService.instance.addListener(_onChanged);
+    LogTimerService.instance.addListener(_onTimerChanged);
   }
 
   @override
   void dispose() {
     TaskService.instance.removeListener(_onChanged);
+    LogTimerService.instance.removeListener(_onTimerChanged);
     super.dispose();
   }
 
   void _onChanged() => setState(() {});
+  void _onTimerChanged() => setState(() {});
 
   Widget _buildTaskTile(Task task) {
     return NtkTaskTile(
@@ -80,7 +83,7 @@ class _TasksScreenState extends State<TasksScreen> {
     for (int i = 0; i < 3; i++) {
       if (groups[i].isNotEmpty) {
         sections.add(
-          NtkSection(
+          NtkTasksSection(
             backgroundColor: _priorityColor(labels[i]),
             title: '${labels[i]} (${groups[i].length})',
             isOpen: true,
@@ -114,15 +117,22 @@ class _TasksScreenState extends State<TasksScreen> {
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            8 + LogTimerService.instance.bottomPillPadding,
+          ),
           children: [
             if (sortOrder == 'Grouped')
               ..._buildGrouped(incomplete)
-            else
+            else ...[
               ..._sortFlat(incomplete, sortOrder).map(_buildTaskTile),
+              SizedBox(height: 8),
+            ],
 
             if (completed.isNotEmpty)
-              NtkSection(
+              NtkTasksSection(
                 key: const ValueKey('completed'),
                 title: 'Completed (${completed.length})',
                 isOpen: false,

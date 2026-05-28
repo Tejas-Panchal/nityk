@@ -7,7 +7,18 @@ import './services/services.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SettingsService.instance.load();
-  TaskService.instance.load();
+  await TaskService.instance.load();
+  await LogService.instance.load();
+  // Restore active timers from unfinished logs
+  for (final log in LogService.instance.activeLogs) {
+    if (log.id != null) {
+      LogTimerService.instance.start(
+        log.id!,
+        log.title,
+        startedAt: log.startedAt,
+      );
+    }
+  }
   runApp(const NitykApp());
 }
 

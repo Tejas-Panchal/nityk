@@ -35,18 +35,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final s = SettingsService.instance;
         switch (index) {
           case 0:
-            return NtkSection(
+            return NtkSettingsSection(
               title: 'General',
               children: [
                 NtkSettingsTile.toggle(
                   label: 'Dark Mode',
                   toggleValue: s.darkMode,
-                  onToggleChanged: (v) => s.darkMode = v,
+                  onToggleChanged: (v) => {},
                 ),
                 NtkSettingsTile.toggle(
                   label: 'Use 24h',
                   toggleValue: s.use24h,
-                  onToggleChanged: (v) => s.use24h = v,
+                  onToggleChanged: (v) => {},
                 ),
                 NtkSettingsTile.text(
                   label: 'Date Format',
@@ -56,7 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             );
           case 1:
-            return NtkSection(
+            return NtkSettingsSection(
               title: 'Tasks',
               children: [
                 NtkSettingsTile.option(
@@ -68,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             );
           case 2:
-            return NtkSection(
+            return NtkSettingsSection(
               title: 'Data',
               isOpen: false,
               children: [
@@ -94,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             );
           case 3:
-            return NtkSection(
+            return NtkSettingsSection(
               title: 'About',
               isOpen: false,
               children: [

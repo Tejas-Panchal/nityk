@@ -16,7 +16,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'nityk.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createTables,
       onUpgrade: _onUpgrade,
     );
@@ -43,6 +43,21 @@ class DatabaseHelper {
       use_24h INTEGER NOT NULL DEFAULT 1
     )
   ''');
+    await db.execute('''
+    CREATE TABLE logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      date TEXT NOT NULL,
+      started_at TEXT,
+      finished_at TEXT,
+      duration_seconds INTEGER,
+      task_id INTEGER,
+      habit_id INTEGER,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -53,6 +68,23 @@ class DatabaseHelper {
         sort_order TEXT NOT NULL DEFAULT 'New->Old',
         dark_mode INTEGER NOT NULL DEFAULT 1,
         use_24h INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        date TEXT NOT NULL,
+        started_at TEXT,
+        finished_at TEXT,
+        duration_seconds INTEGER,
+        task_id INTEGER,
+        habit_id INTEGER,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
       )
     ''');
     }
@@ -120,5 +152,31 @@ class DatabaseHelper {
       'id': 1,
       ...settings.toMap(),
     }, where: 'id = 1');
+  }
+
+  Future<int> insertLog(Log log) async {
+    final db = await database;
+    return await db.insert('logs', log.toMap());
+  }
+
+  Future<List<Log>> getAllLogs() async {
+    final db = await database;
+    final maps = await db.query('logs', orderBy: 'date DESC, started_at ASC');
+    return maps.map((map) => Log.fromMap(map)).toList();
+  }
+
+  Future<int> updateLog(Log log) async {
+    final db = await database;
+    return await db.update(
+      'logs',
+      log.toMap(),
+      where: 'id = ?',
+      whereArgs: [log.id],
+    );
+  }
+
+  Future<int> deleteLog(int id) async {
+    final db = await database;
+    return await db.delete('logs', where: 'id = ?', whereArgs: [id]);
   }
 }
