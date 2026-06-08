@@ -99,13 +99,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final timers = LogTimerService.instance.timers;
     const pillHeight = 36.0;
     const pillGap = 8.0;
-    const bottomOffset = 64.0; // above bottom nav (~56px + padding)
+    const bottomOffset = 60.0; // above bottom nav (~56px + padding)
     final pills = <Widget>[];
     for (int i = 0; i < timers.length; i++) {
       final t = timers[i];
       pills.add(
         Positioned(
           right: 16,
+          left: 16,
           bottom: bottomOffset + (i * (pillHeight + pillGap)),
           child: NtkLogTimerPill(
             title: t.title,

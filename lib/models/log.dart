@@ -2,14 +2,14 @@ class Log {
   final int? id;
   final String title;
   final String description;
-  final String date; // DD-MM-YYYY
+  final String date;
   final DateTime? startedAt;
   final DateTime? finishedAt;
-  final int? durationSeconds; // computed when both times present
-  final int? taskId; // reserved
-  final int? habitId; // reserved
-  final String createdAt;
-  final String updatedAt;
+  final int? durationSeconds;
+  final int? taskId;
+  final int? habitId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const Log({
     this.id,
@@ -35,8 +35,8 @@ class Log {
     'duration_seconds': durationSeconds,
     'task_id': taskId,
     'habit_id': habitId,
-    'created_at': createdAt,
-    'updated_at': updatedAt,
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
   };
 
   factory Log.fromMap(Map<String, dynamic> map) => Log(
@@ -53,8 +53,8 @@ class Log {
     durationSeconds: map['duration_seconds'] as int?,
     taskId: map['task_id'] as int?,
     habitId: map['habit_id'] as int?,
-    createdAt: map['created_at'] as String,
-    updatedAt: map['updated_at'] as String,
+    createdAt: DateTime.parse(map['created_at'] as String),
+    updatedAt: DateTime.parse(map['updated_at'] as String),
   );
 
   Log copyWith({
@@ -67,8 +67,8 @@ class Log {
     int? durationSeconds,
     int? taskId,
     int? habitId,
-    String? createdAt,
-    String? updatedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     bool clearStartedAt = false,
     bool clearFinishedAt = false,
     bool clearDuration = false,

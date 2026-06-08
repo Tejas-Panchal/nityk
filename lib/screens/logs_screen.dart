@@ -21,7 +21,6 @@ class _LogsScreenState extends State<LogsScreen> {
     super.initState();
     LogService.instance.addListener(_onChanged);
     LogTimerService.instance.addListener(_onTimerChanged);
-    // After first frame, scroll so current-month section is at the top
     WidgetsBinding.instance.addPostFrameCallback((_) => _initialScroll());
   }
 
@@ -36,15 +35,9 @@ class _LogsScreenState extends State<LogsScreen> {
   void _onChanged() => setState(() {});
   void _onTimerChanged() => setState(() {});
 
-  /// Scroll so the nearest-to-today (current month) content sits at the top
-  /// of the viewport instead of the bottom.
   void _initialScroll() {
     if (!_scrollController.hasClients) return;
-    // With reverse: true, offset 0 puts the first child at the bottom.
-    // Scrolling by one viewport height moves it to the top.
-    _scrollController.jumpTo(
-      _scrollController.position.viewportDimension,
-    );
+    _scrollController.jumpTo(_scrollController.position.viewportDimension);
   }
 
   static int _dateToSortKey(String dateStr) {
@@ -147,7 +140,7 @@ class _LogsScreenState extends State<LogsScreen> {
 
     if (currentMonthLogs.isNotEmpty) {
       final dateGroups = _groupLogsByDate(currentMonthLogs);
-      for (final group in dateGroups.reversed) {
+      for (final group in dateGroups) {
         widgets.add(
           _buildDateSection(
             group['date'] as String,
@@ -234,7 +227,6 @@ class _LogsScreenState extends State<LogsScreen> {
       children: [
         ListView.builder(
           controller: _scrollController,
-          reverse: true,
           padding: EdgeInsets.fromLTRB(
             16,
             8,

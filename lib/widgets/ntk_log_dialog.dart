@@ -87,14 +87,13 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
     }
     final now = DateTime.now();
     final today = DateTimeUtils.date();
-    final isoNow = now.toIso8601String();
     final log = Log(
       title: title,
       description: _descController.text.trim(),
       date: today,
       startedAt: now,
-      createdAt: isoNow,
-      updatedAt: isoNow,
+      createdAt: now,
+      updatedAt: now,
     );
     await LogService.instance.create(log);
     // Find the just-inserted log by matching title+date+startedAt
@@ -142,7 +141,6 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
       return;
     }
     final now = DateTime.now();
-    final isoNow = now.toIso8601String();
     // Build DateTime from today's date + time fields
     DateTime? startedDt;
     DateTime? finishedDt;
@@ -171,8 +169,8 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
       startedAt: startedDt,
       finishedAt: finishedDt,
       durationSeconds: durationSeconds,
-      createdAt: isEditing ? widget.log!.createdAt : isoNow,
-      updatedAt: isoNow,
+      createdAt: isEditing ? widget.log!.createdAt : now,
+      updatedAt: now,
     );
     if (isEditing) {
       await LogService.instance.update(log);

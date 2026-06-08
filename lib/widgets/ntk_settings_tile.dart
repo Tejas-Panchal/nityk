@@ -55,15 +55,13 @@ class NtkSettingsTile extends StatefulWidget {
   const NtkSettingsTile.toggle({
     super.key,
     required this.label,
-    required bool toggleValue,
-    required ValueChanged<bool> onToggleChanged,
+    required this.toggleValue,
+    required this.onToggleChanged,
   }) : trailing = null,
        onTap = null,
        options = null,
        selected = null,
        onChanged = null,
-       toggleValue = toggleValue,
-       onToggleChanged = onToggleChanged,
        textValue = null,
        onTextChanged = null,
        hint = null,
@@ -74,8 +72,8 @@ class NtkSettingsTile extends StatefulWidget {
   const NtkSettingsTile.text({
     super.key,
     required this.label,
-    required String textValue,
-    required ValueChanged<String> onTextChanged,
+    required this.textValue,
+    required this.onTextChanged,
     this.hint = '',
   }) : trailing = null,
        onTap = null,
@@ -84,8 +82,6 @@ class NtkSettingsTile extends StatefulWidget {
        onChanged = null,
        toggleValue = null,
        onToggleChanged = null,
-       textValue = textValue,
-       onTextChanged = onTextChanged,
        isRisky = null,
        secondaryLabel = null,
        description = null;
@@ -95,7 +91,7 @@ class NtkSettingsTile extends StatefulWidget {
     required this.label,
     required this.onTap,
     this.isRisky = false,
-    String secondaryLabel = '',
+    this.secondaryLabel = '',
   }) : trailing = null,
        options = null,
        selected = null,
@@ -105,13 +101,12 @@ class NtkSettingsTile extends StatefulWidget {
        textValue = null,
        onTextChanged = null,
        hint = null,
-       secondaryLabel = secondaryLabel,
        description = null;
 
   const NtkSettingsTile.banner({
     super.key,
     required this.label,
-    required String secondaryLabel,
+    required this.secondaryLabel,
     this.description,
   }) : trailing = null,
        onTap = null,
@@ -123,8 +118,7 @@ class NtkSettingsTile extends StatefulWidget {
        textValue = null,
        onTextChanged = null,
        hint = null,
-       isRisky = null,
-       secondaryLabel = secondaryLabel;
+       isRisky = null;
 
   @override
   State<NtkSettingsTile> createState() => _NtkSettingsTileState();

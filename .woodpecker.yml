@@ -1,0 +1,55 @@
+when:
+  branch: main
+  event: [push, pull_request]
+steps:
+  test:
+    image: ghcr.io/cirruslabs/flutter:3.41.2
+    commands:
+      - flutter pub get
+      - dart analyze lib/
+      - flutter test
+---
+when:
+  event: tag
+  tag: v*
+steps:
+  test:
+    image: ghcr.io/cirruslabs/flutter:3.41.2
+    commands:
+      - flutter pub get
+      - dart analyze lib/
+      - flutter test
+  build:
+    image: ghcr.io/cirruslabs/flutter:3.41.2
+    secrets: [keystore_base64, key_alias, key_password, store_password, release_token]
+    commands:
+      ## Decode keystore
+      - echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+      ## Build signed APKs
+      - flutter build apk --split-per-abi --release
+      ## Rename APKs to arch-only names
+      - |
+        for f in build/app/outputs/flutter-apk/app-*-release.apk; do
+          arch=$(echo "$f" | sed 's/.*app-\(.*\)-release\.apk/\1/')
+          mv "$f" "build/app/outputs/flutter-apk/${arch}.apk"
+        done
+      ## Determine prerelease flag
+      - |
+        if echo "$CI_COMMIT_TAG" | grep -q "^v0\."; then
+          echo "prerelease" > /tmp/prerelease
+        else
+          echo "false" > /tmp/prerelease
+        fi
+      ## Upload each APK to Codeberg Release
+      - |
+        prerelease=$(cat /tmp/prerelease)
+        for f in build/app/outputs/flutter-apk/*.apk; do
+          curl -s -X POST \
+            -H "Authorization: token $RELEASE_TOKEN" \
+            -H "Content-Type: application/octet-stream" \
+            "https://codeberg.org/api/v1/repos/${CI_REPO}/releases" \
+            -F "tag_name=${CI_COMMIT_TAG}" \
+            -F "prerelease=${prerelease}" \
+            -F "name=${CI_COMMIT_TAG}" \
+            -F "files@${f}"
+        done

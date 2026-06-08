@@ -42,7 +42,7 @@ class LogService extends ChangeNotifier {
       durationSeconds: log.startedAt != null
           ? now.difference(log.startedAt!).inSeconds
           : null,
-      updatedAt: now.toIso8601String(),
+      updatedAt: now,
     );
     await update(updated);
   }

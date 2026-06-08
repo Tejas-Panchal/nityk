@@ -108,20 +108,4 @@ class NtkText {
     color: NtkColors.textHint,
     height: 1.45,
   );
-
-  /// Custom size with default font + color
-  static TextStyle style(
-    double fontSize, {
-    Color color = NtkColors.textPrimary,
-    FontWeight weight = FontWeight.w400,
-    double height = 1.0,
-  }) {
-    return TextStyle(
-      fontFamily: _font,
-      fontSize: fontSize,
-      fontWeight: weight,
-      color: color,
-      height: height,
-    );
-  }
 }

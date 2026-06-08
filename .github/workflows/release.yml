@@ -1,0 +1,51 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: dart analyze lib/
+      - run: flutter test
+      - name: Decode keystore
+        run: echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      - name: Build release APKs
+        run: flutter build apk --split-per-abi --release
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+      - name: Classify version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF_NAME" =~ ^v0\. ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "apk_name=nityk-prerelease" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "apk_name=nityk-release" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Rename APKs
+        run: |
+          for f in build/app/outputs/flutter-apk/app-*-release.apk; do
+            arch=$(echo "$f" | sed 's/.*app-\(.*\)-release\.apk/\1/')
+            mv "$f" "build/app/outputs/flutter-apk/${arch}.apk"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.apk_name }}
+          path: build/app/outputs/flutter-apk/*.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/*.apk
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          generate_release_notes: true

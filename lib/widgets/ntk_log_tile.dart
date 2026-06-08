@@ -10,12 +10,7 @@ class NtkLogTile extends StatefulWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
-  const NtkLogTile({
-    super.key,
-    required this.log,
-    this.onEdit,
-    this.onDelete,
-  });
+  const NtkLogTile({super.key, required this.log, this.onEdit, this.onDelete});
 
   @override
   State<NtkLogTile> createState() => _NtkLogTileState();
@@ -65,8 +60,8 @@ class _NtkLogTileState extends State<NtkLogTile> {
     final timePart = started != null && finished != null
         ? '${fmt(started)}-${fmt(finished)}${durationStr != null ? '[$durationStr]' : ''}'
         : finished != null
-            ? '-${fmt(finished)}'
-            : '';
+        ? '-${fmt(finished)}'
+        : '';
 
     return timePart;
   }
@@ -99,10 +94,7 @@ class _NtkLogTileState extends State<NtkLogTile> {
                       children: [
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            log.title,
-                            style: NtkText.headlineMedium,
-                          ),
+                          child: Text(log.title, style: NtkText.headlineMedium),
                         ),
                       ],
                     ),

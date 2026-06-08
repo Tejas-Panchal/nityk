@@ -58,9 +58,7 @@ class _NtkLogTimerPillState extends State<NtkLogTimerPill> {
 
   String get _display {
     if (_showStopConfirm) return 'Stop?';
-    final initial = widget.title.trim().isNotEmpty
-        ? widget.title.trim()[0].toUpperCase()
-        : '?';
+    final initial = widget.title;
     final h = _elapsed.inHours;
     final m = _elapsed.inMinutes.remainder(60);
     final s = _elapsed.inSeconds.remainder(60);
@@ -72,7 +70,6 @@ class _NtkLogTimerPillState extends State<NtkLogTimerPill> {
 
   @override
   Widget build(BuildContext context) {
-    final h = _elapsed.inHours;
     return GestureDetector(
       onTap: _onTap,
       child: Container(
@@ -91,7 +88,6 @@ class _NtkLogTimerPillState extends State<NtkLogTimerPill> {
         ),
         alignment: Alignment.center,
         child: SizedBox(
-          width: h > 0 ? 76 : 60,
           child: Text(
             _display,
             textAlign: TextAlign.center,

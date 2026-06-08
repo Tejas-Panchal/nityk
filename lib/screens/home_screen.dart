@@ -62,7 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 if (showFull)
                   Text(AppConstants.appName, style: NtkText.titleExtraLarge),
-                Text(DateTimeUtils.time(), style: NtkText.style(fontSize)),
+                Text(
+                  DateTimeUtils.time(),
+                  style: NtkText.titleExtraLarge.copyWith(fontSize: fontSize),
+                ),
                 if (showFull)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -76,7 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             controller: _scrollController,
             padding: EdgeInsets.fromLTRB(
-              16, 0, 16, LogTimerService.instance.bottomPillPadding,
+              16,
+              0,
+              16,
+              LogTimerService.instance.bottomPillPadding,
             ),
             children: [
               SizedBox(

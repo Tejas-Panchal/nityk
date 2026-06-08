@@ -2,7 +2,7 @@ class Task {
   final int? id;
   final String title;
   final String? description;
-  final int priority; // 1=high, 2=medium, 3=low
+  final int priority;
   final bool isCompleted;
   final DateTime? dueDate;
   final DateTime createdAt;
