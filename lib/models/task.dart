@@ -54,14 +54,17 @@ class Task {
     DateTime? dueDate,
     DateTime? createdAt,
     DateTime? completedAt,
+    bool clearDescription = false,
+    bool clearDueDate = false,
+    bool clearCompletedAt = false,
   }) => Task(
     id: id ?? this.id,
     title: title ?? this.title,
-    description: description ?? this.description,
+    description: clearDescription ? null : (description ?? this.description),
     priority: priority ?? this.priority,
     isCompleted: isCompleted ?? this.isCompleted,
-    dueDate: dueDate ?? this.dueDate,
+    dueDate: clearDueDate ? null : (dueDate ?? this.dueDate),
     createdAt: createdAt ?? this.createdAt,
-    completedAt: completedAt ?? this.completedAt,
+    completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),
   );
 }

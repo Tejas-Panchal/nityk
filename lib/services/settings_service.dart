@@ -13,19 +13,25 @@ class SettingsService extends ChangeNotifier {
   set sortOrder(String v) {
     _settings = _settings.copyWith(sortOrder: v);
     notifyListeners();
-    DatabaseHelper.instance.saveSettings(_settings);
+    _save();
   }
 
   set darkMode(bool v) {
     _settings = _settings.copyWith(darkMode: v);
     notifyListeners();
-    DatabaseHelper.instance.saveSettings(_settings);
+    _save();
   }
 
   set use24h(bool v) {
     _settings = _settings.copyWith(use24h: v);
     notifyListeners();
-    DatabaseHelper.instance.saveSettings(_settings);
+    _save();
+  }
+
+  Future<void> _save() async {
+    try {
+      await DatabaseHelper.instance.saveSettings(_settings);
+    } catch (_) {}
   }
 
   Future<void> load() async {

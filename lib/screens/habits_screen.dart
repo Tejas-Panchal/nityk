@@ -1,14 +1,9 @@
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
 
-class HabitsScreen extends StatefulWidget {
+class HabitsScreen extends StatelessWidget {
   final void Function(Widget) push;
   const HabitsScreen({super.key, required this.push});
-  @override
-  State<HabitsScreen> createState() => _HabitsScreenState();
-}
-
-class _HabitsScreenState extends State<HabitsScreen> {
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('Habits', style: NtkText.headlineLarge));

@@ -23,14 +23,6 @@ class DateTimeUtils {
     return '$time $ampm';
   }
 
-  /// Current date in DD-MM-YYYY (app standard)
-  static String date() {
-    final now = DateTime.now();
-    return '${now.day.toString().padLeft(2, '0')}-'
-        '${now.month.toString().padLeft(2, '0')}-'
-        '${now.year}';
-  }
-
   /// Current date in "Mon, 25 May 2026"
   static String dateFull() {
     final now = DateTime.now();
@@ -116,5 +108,28 @@ class DateTimeUtils {
     final m = d.inMinutes.remainder(60);
     if (h > 0) return '${h}h${m}m';
     return '${m}m';
+  }
+
+  /// Storage format: YYYYMMDD (lexicographically sortable)
+  static String date() {
+    final now = DateTime.now();
+    return '${now.year}'
+        '${now.month.toString().padLeft(2, '0')}'
+        '${now.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Display format: DD-MM-YYYY from storage string
+  static String dateDisplay(String storage) {
+    if (storage.length != 8) return storage;
+    return '${storage.substring(6, 8)}-'
+        '${storage.substring(4, 6)}-'
+        '${storage.substring(0, 4)}';
+  }
+
+  /// Parse display string (DD-MM-YYYY) back to storage (YYYYMMDD)
+  static String dateParse(String display) {
+    final parts = display.split('-');
+    if (parts.length != 3) return display;
+    return '${parts[2]}${parts[1]}${parts[0]}';
   }
 }

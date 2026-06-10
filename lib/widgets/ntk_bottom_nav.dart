@@ -5,12 +5,10 @@ import 'widgets.dart';
 class NtkBottomNavDestination {
   final String label;
   final NtkIcons icon;
-  final NtkIcons? selectedIcon;
 
   const NtkBottomNavDestination({
     required this.label,
     required this.icon,
-    this.selectedIcon,
   });
 }
 
@@ -80,9 +78,7 @@ class _NavItem extends StatelessWidget {
         ),
         child: Center(
           child: NtkIcon(
-            icon: isSelected
-                ? (destination.selectedIcon ?? destination.icon)
-                : destination.icon,
+            icon: destination.icon,
             size: 24,
             color: isSelected ? NtkColors.onAccent : NtkColors.textSecondary,
           ),

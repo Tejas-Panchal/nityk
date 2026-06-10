@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
+import 'ntk_text_field.dart';
 import '../theme/theme.dart';
-import '../widgets/widgets.dart';
-import '../database/database_helper.dart';
+import '../services/services.dart';
 import '../models/models.dart';
 
 class NtkTaskDialog extends StatefulWidget {
@@ -72,7 +72,7 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
     }
     final t = widget.task;
     if (t != null) {
-      await DatabaseHelper.instance.updateTask(
+      await TaskService.instance.update(
         t.copyWith(
           title: title,
           description: _descController.text.trim().isEmpty
@@ -80,6 +80,8 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
               : _descController.text.trim(),
           priority: _priority,
           dueDate: dueDate,
+          clearDescription: _descController.text.trim().isEmpty,
+          clearDueDate: dueDate == null,
         ),
       );
     } else {
@@ -91,7 +93,7 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
         priority: _priority,
         dueDate: dueDate,
       );
-      await DatabaseHelper.instance.insertTask(task);
+      await TaskService.instance.add(task);
     }
     widget.onClose();
   }
@@ -99,7 +101,7 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
   Future<void> _delete() async {
     final id = widget.task?.id;
     if (id != null) {
-      await DatabaseHelper.instance.deleteTask(id);
+      await TaskService.instance.delete(id);
     }
     widget.onClose();
   }

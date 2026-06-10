@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
+import 'ntk_icon.dart';
 import '../theme/theme.dart';
-import '../widgets/widgets.dart';
 
 class NtkSection extends StatefulWidget {
   final String title;
@@ -37,8 +37,15 @@ class _NtkSectionState extends State<NtkSection> {
   }
 
   @override
+  void didUpdateWidget(covariant NtkSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isOpen != oldWidget.isOpen) {
+      _isOpen = widget.isOpen;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Conditionally separate children with 1px dividers
     final List<Widget> separated;
     if (widget.showSeparators) {
       separated = [];
@@ -92,8 +99,7 @@ class _NtkSectionState extends State<NtkSection> {
               color: NtkColors.surface,
               border: widget.showBottomBorder
                   ? Border(
-                      bottom:
-                          BorderSide(color: NtkColors.border, width: 1),
+                      bottom: BorderSide(color: NtkColors.border, width: 1),
                     )
                   : null,
             ),

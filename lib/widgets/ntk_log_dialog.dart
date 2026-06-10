@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
+import 'ntk_text_field.dart';
 import '../theme/theme.dart';
-import '../widgets/widgets.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../utils/utils.dart';
@@ -44,7 +44,7 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
       final l = widget.log!;
       _titleController.text = l.title;
       _descController.text = l.description;
-      _dateController.text = l.date;
+      _dateController.text = DateTimeUtils.dateDisplay(l.date);
       if (l.startedAt != null) {
         final h = l.startedAt!.hour.toString().padLeft(2, '0');
         final m = l.startedAt!.minute.toString().padLeft(2, '0');
@@ -75,109 +75,111 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
     super.dispose();
   }
 
-  void _startTimer() async {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      setState(() => _error = 'Title is required');
-      return;
-    }
-    if (!LogTimerService.instance.canStart) {
-      setState(() => _error = 'Max 2 timers running');
-      return;
-    }
-    final now = DateTime.now();
-    final today = DateTimeUtils.date();
-    final log = Log(
-      title: title,
-      description: _descController.text.trim(),
-      date: today,
-      startedAt: now,
-      createdAt: now,
-      updatedAt: now,
-    );
-    await LogService.instance.create(log);
-    // Find the just-inserted log by matching title+date+startedAt
-    final created = LogService.instance.allLogs.firstWhere(
-      (l) =>
-          l.title == title &&
-          l.date == today &&
-          l.startedAt != null &&
-          l.startedAt!.difference(now).inSeconds.abs() < 2,
-    );
-    if (created.id != null) {
-      LogTimerService.instance.start(created.id!, title);
-    }
-    widget.onClose();
-  }
-
-  void _save() async {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      setState(() => _error = 'Title is required');
-      return;
-    }
-    // Default date to today if empty
-    if (_dateController.text.trim().isEmpty) {
-      _dateController.text = DateTimeUtils.date();
-    }
-    final startMin = _startTimeController.text.trim().isEmpty
-        ? null
-        : DateTimeUtils.parseTime(_startTimeController.text.trim());
-    final finishMin = _finishTimeController.text.trim().isEmpty
-        ? null
-        : DateTimeUtils.parseTime(_finishTimeController.text.trim());
-    // Validate time format
-    if (_startTimeController.text.trim().isNotEmpty && startMin == null) {
-      setState(() => _error = 'Invalid start time (use HH:MM)');
-      return;
-    }
-    if (_finishTimeController.text.trim().isNotEmpty && finishMin == null) {
-      setState(() => _error = 'Invalid finish time (use HH:MM)');
-      return;
-    }
-    // Rule: if start filled, finish must be filled
-    if (startMin != null && finishMin == null) {
-      setState(() => _error = 'Finish time is required when start time is set');
-      return;
-    }
-    final now = DateTime.now();
-    // Build DateTime from today's date + time fields
-    DateTime? startedDt;
-    DateTime? finishedDt;
-    if (startMin != null && finishMin != null) {
-      final dateParts = _dateController.text.trim().split('-');
-      int day, month, year;
-      try {
-        day = int.parse(dateParts[0]);
-        month = int.parse(dateParts[1]);
-        year = int.parse(dateParts[2]);
-      } catch (_) {
-        setState(() => _error = 'Invalid date (use DD-MM-YYYY)');
+  Future<void> _startTimer() async {
+    try {
+      final title = _titleController.text.trim();
+      if (title.isEmpty) {
+        setState(() => _error = 'Title is required');
         return;
       }
-      startedDt = DateTime(year, month, day, startMin ~/ 60, startMin % 60);
-      finishedDt = DateTime(year, month, day, finishMin ~/ 60, finishMin % 60);
+      if (!LogTimerService.instance.canStart) {
+        setState(() => _error = 'Max 3 timers running');
+        return;
+      }
+      final now = DateTime.now();
+      final today = DateTimeUtils.date();
+      final log = Log(
+        title: title,
+        description: _descController.text.trim(),
+        date: today,
+        startedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final id = await LogService.instance.create(log);
+      LogTimerService.instance.start(id, title);
+      widget.onClose();
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Failed to start timer');
     }
-    final durationSeconds = startedDt != null && finishedDt != null
-        ? finishedDt.difference(startedDt).inSeconds
-        : null;
-    final log = Log(
-      id: isEditing ? widget.log!.id : null,
-      title: title,
-      description: _descController.text.trim(),
-      date: _dateController.text.trim(),
-      startedAt: startedDt,
-      finishedAt: finishedDt,
-      durationSeconds: durationSeconds,
-      createdAt: isEditing ? widget.log!.createdAt : now,
-      updatedAt: now,
-    );
-    if (isEditing) {
-      await LogService.instance.update(log);
-    } else {
-      await LogService.instance.create(log);
+  }
+
+  Future<void> _save() async {
+    try {
+      final title = _titleController.text.trim();
+      if (title.isEmpty) {
+        setState(() => _error = 'Title is required');
+        return;
+      }
+      if (_dateController.text.trim().isEmpty) {
+      _dateController.text = DateTimeUtils.dateDisplay(DateTimeUtils.date());
+      }
+      final startMin = _startTimeController.text.trim().isEmpty
+          ? null
+          : DateTimeUtils.parseTime(_startTimeController.text.trim());
+      final finishMin = _finishTimeController.text.trim().isEmpty
+          ? null
+          : DateTimeUtils.parseTime(_finishTimeController.text.trim());
+      if (_startTimeController.text.trim().isNotEmpty && startMin == null) {
+        setState(() => _error = 'Invalid start time (use HH:MM)');
+        return;
+      }
+      if (_finishTimeController.text.trim().isNotEmpty && finishMin == null) {
+        setState(() => _error = 'Invalid finish time (use HH:MM)');
+        return;
+      }
+      if (startMin != null && finishMin == null) {
+        setState(
+          () => _error = 'Finish time is required when start time is set',
+        );
+        return;
+      }
+      final now = DateTime.now();
+      DateTime? startedDt;
+      DateTime? finishedDt;
+      if (startMin != null && finishMin != null) {
+        final dateParts = _dateController.text.trim().split('-');
+        int day, month, year;
+        try {
+          day = int.parse(dateParts[0]);
+          month = int.parse(dateParts[1]);
+          year = int.parse(dateParts[2]);
+        } catch (_) {
+          setState(() => _error = 'Invalid date (use DD-MM-YYYY)');
+          return;
+        }
+        startedDt = DateTime(year, month, day, startMin ~/ 60, startMin % 60);
+        finishedDt = DateTime(
+          year,
+          month,
+          day,
+          finishMin ~/ 60,
+          finishMin % 60,
+        );
+      }
+      final durationSeconds = startedDt != null && finishedDt != null
+          ? finishedDt.difference(startedDt).inSeconds
+          : null;
+      final log = Log(
+        id: isEditing ? widget.log!.id : null,
+        title: title,
+        description: _descController.text.trim(),
+        date: DateTimeUtils.dateParse(_dateController.text.trim()),
+        startedAt: startedDt,
+        finishedAt: finishedDt,
+        durationSeconds: durationSeconds,
+        createdAt: isEditing ? widget.log!.createdAt : now,
+        updatedAt: now,
+      );
+      if (isEditing) {
+        await LogService.instance.update(log);
+      } else {
+        await LogService.instance.create(log);
+      }
+      widget.onClose();
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Failed to save log');
     }
-    widget.onClose();
   }
 
   Future<void> _delete() async {

@@ -8,36 +8,22 @@ class NtkScaffold extends StatelessWidget {
   final Widget body;
   final NtkBottomNav? bottomNav;
   final Color? backgroundColor;
-  final Widget? floatingActionButton;
   const NtkScaffold({
     super.key,
     this.appBar,
     required this.body,
     this.bottomNav,
     this.backgroundColor,
-    this.floatingActionButton,
   });
   @override
   Widget build(BuildContext context) {
-    Widget content = Column(
+    final content = Column(
       children: [
         ?appBar,
         Expanded(child: body),
         ?bottomNav,
       ],
     );
-    if (floatingActionButton != null) {
-      content = Stack(
-        children: [
-          content,
-          Positioned(
-            right: 16,
-            bottom: (bottomNav != null ? 80 : 16),
-            child: floatingActionButton!,
-          ),
-        ],
-      );
-    }
     return Container(
       width: double.infinity,
       height: double.infinity,

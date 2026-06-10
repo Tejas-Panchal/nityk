@@ -143,13 +143,10 @@ class _TasksScreenState extends State<TasksScreen> {
         if (_showEditDialog && _editingTask != null)
           NtkTaskDialog(
             task: _editingTask,
-            onClose: () {
-              setState(() {
-                _showEditDialog = false;
-                _editingTask = null;
-              });
-              s.load();
-            },
+            onClose: () => setState(() {
+              _showEditDialog = false;
+              _editingTask = null;
+            }),
           ),
       ],
     );

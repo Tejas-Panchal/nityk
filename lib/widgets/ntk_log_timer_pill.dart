@@ -6,12 +6,14 @@ class NtkLogTimerPill extends StatefulWidget {
   final String title;
   final DateTime startedAt;
   final VoidCallback onStop;
+  final bool compact;
 
   const NtkLogTimerPill({
     super.key,
     required this.title,
     required this.startedAt,
     required this.onStop,
+    this.compact = false,
   });
 
   @override
@@ -56,29 +58,58 @@ class _NtkLogTimerPillState extends State<NtkLogTimerPill> {
     super.dispose();
   }
 
-  String get _display {
-    if (_showStopConfirm) return 'Stop?';
-    final initial = widget.title;
+  String get _titleDisplay => _showStopConfirm ? 'Stop?' : widget.title;
+
+  String get _timerDisplay {
     final h = _elapsed.inHours;
     final m = _elapsed.inMinutes.remainder(60);
     final s = _elapsed.inSeconds.remainder(60);
-    final time = h > 0
+    return h > 0
         ? '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-    return '[$initial] $time';
   }
+
+  String get _display => '[$_titleDisplay] $_timerDisplay';
 
   @override
   Widget build(BuildContext context) {
+    final color = _showStopConfirm
+        ? NtkColors.priorityHighDark
+        : NtkColors.surfaceHigh;
+    final textColor = _showStopConfirm
+        ? NtkColors.onAccent
+        : NtkColors.textSecondary;
+
+    Widget child;
+    if (widget.compact) {
+      child = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '[$_titleDisplay]',
+            style: NtkText.labelLarge.copyWith(fontSize: 12, color: textColor),
+          ),
+          Text(
+            _timerDisplay,
+            style: NtkText.labelLarge.copyWith(fontSize: 14, color: textColor),
+          ),
+        ],
+      );
+    } else {
+      child = Text(
+        _display,
+        textAlign: TextAlign.center,
+        style: NtkText.labelLarge.copyWith(fontSize: 16, color: textColor),
+      );
+    }
+
     return GestureDetector(
       onTap: _onTap,
       child: Container(
-        height: 36,
+        height: widget.compact ? 44 : 36,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: _showStopConfirm
-              ? NtkColors.priorityHighDark
-              : NtkColors.surfaceHigh,
+          color: color,
           border: Border.all(
             color: _showStopConfirm
                 ? NtkColors.priorityHighDark
@@ -87,18 +118,7 @@ class _NtkLogTimerPillState extends State<NtkLogTimerPill> {
           ),
         ),
         alignment: Alignment.center,
-        child: SizedBox(
-          child: Text(
-            _display,
-            textAlign: TextAlign.center,
-            style: NtkText.labelLarge.copyWith(
-              fontSize: 16,
-              color: _showStopConfirm
-                  ? NtkColors.onAccent
-                  : NtkColors.textSecondary,
-            ),
-          ),
-        ),
+        child: child,
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import '../utils/utils.dart';
 
 class ActiveTimer {
   final int logId;
@@ -22,11 +23,11 @@ class LogTimerService extends ChangeNotifier {
 
   double get bottomPillPadding {
     if (_timers.isEmpty) return 44;
-    const pillHeight = 36.0;
-    const pillGap = 8.0;
-    const bottomOffset = 64.0;
     final n = _timers.length;
-    return bottomOffset + (n - 1) * (pillHeight + pillGap) + pillHeight + 16;
+    final rows = n == 3 ? 2 : 1;
+    final pillH = n == 3 ? 44 : AppConstants.pillHeight;
+    final height = rows * pillH + (rows - 1) * AppConstants.pillGap;
+    return AppConstants.pillPaddingOffset + height + 16;
   }
 
   void start(int logId, String title, {DateTime? startedAt}) {

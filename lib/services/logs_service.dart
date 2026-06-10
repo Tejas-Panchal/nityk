@@ -16,9 +16,10 @@ class LogService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> create(Log log) async {
-    await DatabaseHelper.instance.insertLog(log);
+  Future<int> create(Log log) async {
+    final id = await DatabaseHelper.instance.insertLog(log);
     await load();
+    return id;
   }
 
   Future<void> update(Log log) async {

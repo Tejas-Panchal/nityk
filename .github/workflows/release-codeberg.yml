@@ -1,0 +1,56 @@
+name: Release (Codeberg)
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: docker://ghcr.io/cirruslabs/flutter:3.41.2
+    steps:
+      - uses: actions/checkout@v4
+      - run: flutter pub get
+      - run: dart analyze lib/
+      - run: flutter test
+
+      - name: Decode keystore
+        run: echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build release APKs
+        run: flutter build apk --split-per-abi --release
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+
+      - name: Rename APKs
+        run: |
+          for f in build/app/outputs/flutter-apk/app-*-release.apk; do
+            arch=$(echo "$f" | sed 's/.*app-\(.*\)-release\.apk/\1/')
+            mv "$f" "build/app/outputs/flutter-apk/${arch}.apk"
+          done
+
+      - name: Create release and upload assets
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          # Create release via Codeberg API
+          if echo "$TAG" | grep -q "^v0\."; then
+            IS_PRERELEASE="true"
+          else
+            IS_PRERELEASE="false"
+          fi
+          curl -s -X POST \
+            -H "Authorization: token $RELEASE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag_name\":\"$TAG\",\"name\":\"$TAG\",\"prerelease\":$IS_PRERELEASE}" \
+            "https://codeberg.org/api/v1/repos/${GITHUB_REPOSITORY}/releases"
+          # Upload each APK to the release
+          for f in build/app/outputs/flutter-apk/*.apk; do
+            curl -s -X POST \
+              -H "Authorization: token $RELEASE_TOKEN" \
+              -F "attachment=@$f" \
+              "https://codeberg.org/api/v1/repos/${GITHUB_REPOSITORY}/releases/tags/$TAG/assets"
+          done

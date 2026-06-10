@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
+import 'ntk_icon.dart';
 import '../theme/theme.dart';
-import '../widgets/ntk_icon.dart';
 import '../models/models.dart';
 import '../utils/utils.dart';
 

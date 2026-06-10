@@ -5,10 +5,13 @@ import '../models/models.dart';
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   static Database? _database;
+  static Future<Database>? _databaseFuture;
   DatabaseHelper._();
+
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB();
+    _databaseFuture ??= _initDB();
+    _database = await _databaseFuture;
     return _database!;
   }
 
@@ -16,7 +19,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'nityk.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createTables,
       onUpgrade: _onUpgrade,
     );
@@ -87,6 +90,20 @@ class DatabaseHelper {
         updated_at TEXT NOT NULL
       )
     ''');
+    }
+    if (oldVersion < 4) {
+      final maps = await db.query('logs', columns: ['id', 'date']);
+      for (final map in maps) {
+        final oldDate = map['date'] as String;
+        if (oldDate.contains('-')) {
+          final parts = oldDate.split('-');
+          if (parts.length == 3) {
+            final newDate = '${parts[2]}${parts[1]}${parts[0]}';
+            await db.update('logs', {'date': newDate},
+                where: 'id = ?', whereArgs: [map['id']]);
+          }
+        }
+      }
     }
   }
 

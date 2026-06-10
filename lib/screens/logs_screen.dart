@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
+import '../utils/utils.dart';
 import '../widgets/widgets.dart';
 import '../models/models.dart';
 import '../services/services.dart';
@@ -14,42 +15,29 @@ class LogsScreen extends StatefulWidget {
 class _LogsScreenState extends State<LogsScreen> {
   bool _showEditDialog = false;
   Log? _editingLog;
-  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     LogService.instance.addListener(_onChanged);
     LogTimerService.instance.addListener(_onTimerChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initialScroll());
   }
 
   @override
   void dispose() {
     LogService.instance.removeListener(_onChanged);
     LogTimerService.instance.removeListener(_onTimerChanged);
-    _scrollController.dispose();
     super.dispose();
   }
 
   void _onChanged() => setState(() {});
   void _onTimerChanged() => setState(() {});
 
-  void _initialScroll() {
-    if (!_scrollController.hasClients) return;
-    _scrollController.jumpTo(_scrollController.position.viewportDimension);
-  }
-
-  static int _dateToSortKey(String dateStr) {
-    final parts = dateStr.split('-');
-    return int.parse(parts[2]) * 10000 +
-        int.parse(parts[1]) * 100 +
-        int.parse(parts[0]);
-  }
-
   static (int year, int month) _parseYearMonth(String dateStr) {
-    final parts = dateStr.split('-');
-    return (int.parse(parts[2]), int.parse(parts[1]));
+    return (
+      int.parse(dateStr.substring(0, 4)),
+      int.parse(dateStr.substring(4, 6)),
+    );
   }
 
   static String _monthName(int m) {
@@ -77,7 +65,7 @@ class _LogsScreenState extends State<LogsScreen> {
       map.putIfAbsent(log.date, () => []).add(log);
     }
     final entries = map.entries.toList()
-      ..sort((a, b) => _dateToSortKey(a.key).compareTo(_dateToSortKey(b.key)));
+      ..sort((a, b) => b.key.compareTo(a.key));
     return entries.map((e) => {'date': e.key, 'logs': e.value}).toList();
   }
 
@@ -101,13 +89,13 @@ class _LogsScreenState extends State<LogsScreen> {
     if (child) {
       return NtkLogsSection.child(
         key: ValueKey(date),
-        title: date,
+        title: DateTimeUtils.dateDisplay(date),
         children: tiles,
       );
     }
     return NtkLogsSection(
       key: ValueKey(date),
-      title: date,
+      title: DateTimeUtils.dateDisplay(date),
       isOpen: true,
       children: tiles,
     );
@@ -181,7 +169,7 @@ class _LogsScreenState extends State<LogsScreen> {
       for (final yearEntry in sortedYears) {
         final months = yearEntry.value;
         final sortedMonthEntries = months.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key));
+          ..sort((a, b) => b.key.compareTo(a.key));
         final yearChildren = sortedMonthEntries.map((monthEntry) {
           final dateGroups = _groupLogsByDate(monthEntry.value);
           final dateChildren = dateGroups
@@ -226,7 +214,6 @@ class _LogsScreenState extends State<LogsScreen> {
     return Stack(
       children: [
         ListView.builder(
-          controller: _scrollController,
           padding: EdgeInsets.fromLTRB(
             16,
             8,

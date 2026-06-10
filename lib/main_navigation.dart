@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import './theme/theme.dart';
+import './utils/utils.dart';
 import './widgets/widgets.dart';
 import './screens/screens.dart';
 import './services/services.dart';
@@ -95,22 +96,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.dispose();
   }
 
-  List<Widget> _buildTimerPills(bool hasPushed) {
+  Widget _buildTimerPills() {
     final timers = LogTimerService.instance.timers;
-    const pillHeight = 36.0;
-    const pillGap = 8.0;
-    const bottomOffset = 60.0; // above bottom nav (~56px + padding)
-    final pills = <Widget>[];
-    for (int i = 0; i < timers.length; i++) {
+    if (timers.isEmpty) return const SizedBox.shrink();
+
+    final bottomOffset = _isAddOpen ? 64.0 : AppConstants.pillPositionOffset;
+    final n = timers.length;
+    final isCompact = n == 3;
+
+    Widget buildPill(int i) {
       final t = timers[i];
-      pills.add(
-        Positioned(
-          right: 16,
-          left: 16,
-          bottom: bottomOffset + (i * (pillHeight + pillGap)),
+      return Expanded(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppConstants.pillGap / 2),
           child: NtkLogTimerPill(
             title: t.title,
             startedAt: t.startedAt,
+            compact: isCompact,
             onStop: () {
               LogTimerService.instance.stop(t.logId);
               LogService.instance.stopTimer(t.logId);
@@ -119,7 +121,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
       );
     }
-    return pills;
+
+    Widget pillRow(List<int> indices) {
+      return Row(children: indices.map(buildPill).toList());
+    }
+
+    Widget content;
+    if (isCompact) {
+      content = pillRow([0, 1, 2]);
+    } else {
+      content = pillRow(List.generate(n, (i) => i));
+    }
+
+    return Positioned(
+      left: 8,
+      right: 8,
+      bottom: bottomOffset,
+      child: content,
+    );
   }
 
   @override
@@ -215,17 +234,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     width: 160,
                     child: Container(
                       height: 48,
-                      decoration: BoxDecoration(color: NtkColors.surface),
+                      decoration: BoxDecoration(
+                        color: NtkColors.surface,
+                        border: Border.all(color: NtkColors.border, width: 1),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _ActionItem(
-                            label: 'Add Habit',
                             icon: NtkIcons.habit,
                             onTap: null,
                           ),
                           _ActionItem(
-                            label: 'Tasks',
                             icon: NtkIcons.tasks,
                             onTap: () {
                               _addTimer?.cancel();
@@ -236,7 +256,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             },
                           ),
                           _ActionItem(
-                            label: 'Add Log',
                             icon: NtkIcons.log,
                             onTap: () {
                               _addTimer?.cancel();
@@ -254,10 +273,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
             if (_showAddTask)
               NtkTaskDialog(
-                onClose: () {
-                  TaskService.instance.load();
-                  setState(() => _showAddTask = false);
-                },
+                onClose: () => setState(() => _showAddTask = false),
               ),
             if (_showAddLog)
               NtkLogDialog(
@@ -269,7 +285,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 !(hasPushed && _pushedTitle == 'Settings') &&
                 !_showAddTask &&
                 !_showAddLog)
-              ..._buildTimerPills(hasPushed),
+              _buildTimerPills(),
           ],
         ),
         bottomNav: hasPushed && _pushedTitle == 'Settings'
@@ -296,10 +312,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 class _ActionItem extends StatelessWidget {
-  final String label;
   final NtkIcons icon;
   final VoidCallback? onTap;
-  const _ActionItem({required this.label, required this.icon, this.onTap});
+  const _ActionItem({required this.icon, this.onTap});
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
