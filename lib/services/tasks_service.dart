@@ -15,9 +15,10 @@ class TaskService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> add(Task task) async {
-    await DatabaseHelper.instance.insertTask(task);
+  Future<int> add(Task task) async {
+    final id = await DatabaseHelper.instance.insertTask(task);
     await load();
+    return id;
   }
 
   Future<void> update(Task task) async {

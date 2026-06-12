@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'ntk_text_field.dart';
+import 'ntk_tag_chip.dart';
+import 'ntk_tag_picker.dart';
+import 'ntk_dialog_base.dart';
 import '../theme/theme.dart';
+import '../database/database_helper.dart';
 import '../services/services.dart';
 import '../models/models.dart';
 
@@ -20,6 +24,7 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
   final _dateController = TextEditingController();
   final _dateFocus = FocusNode();
   int _priority = 2;
+  List<int> _selectedTagIds = [];
 
   @override
   void initState() {
@@ -34,6 +39,11 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
             '${t.dueDate!.day.toString().padLeft(2, '0')}-'
             '${t.dueDate!.month.toString().padLeft(2, '0')}-'
             '${t.dueDate!.year}';
+      }
+      if (t.id != null) {
+        DatabaseHelper.instance.getTaskTagIds(t.id!).then((ids) {
+          if (mounted) setState(() => _selectedTagIds = ids);
+        });
       }
     }
   }
@@ -84,6 +94,7 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
           clearDueDate: dueDate == null,
         ),
       );
+      await DatabaseHelper.instance.setTaskTags(t.id!, _selectedTagIds);
     } else {
       final task = Task(
         title: title,
@@ -93,7 +104,10 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
         priority: _priority,
         dueDate: dueDate,
       );
-      await TaskService.instance.add(task);
+      final id = await TaskService.instance.add(task);
+      if (_selectedTagIds.isNotEmpty) {
+        await DatabaseHelper.instance.setTaskTags(id, _selectedTagIds);
+      }
     }
     widget.onClose();
   }
@@ -109,155 +123,113 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.task != null;
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: widget.onClose,
-          child: Container(color: NtkColors.scrim),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedPadding(
-            duration: const Duration(milliseconds: 60),
-            curve: Curves.linear,
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: SingleChildScrollView(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: NtkColors.surface,
-                  border: NtkColors.standardBorder,
+    return NtkDialogBase(
+      onClose: widget.onClose,
+      title: isEditing ? 'Edit Task' : 'Add Task',
+      onSave: _save,
+      onDelete: isEditing ? _delete : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NtkTextField(
+            controller: _titleController,
+            focusNode: _titleFocus,
+            hint: 'Task title',
+          ),
+          const SizedBox(height: 12),
+          NtkTextField(
+            controller: _descController,
+            focusNode: _descFocus,
+            hint: 'Description',
+            maxLines: 3,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              for (final p in [('H', 1), ('M', 2), ('L', 3)]) ...[
+                if (p.$2 > 1) const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _priority = p.$2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: _priority == p.$2
+                            ? _priorityColor(p.$2)
+                            : NtkColors.surfaceHigh,
+                      ),
+                      child: Text(
+                        p.$1,
+                        style: NtkText.titleLarge.copyWith(
+                          color: _priority == p.$2
+                              ? NtkColors.onAccent
+                              : NtkColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isEditing ? 'Edit Task' : 'Add Task',
-                      style: NtkText.titleLarge,
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          NtkTextField(
+            controller: _dateController,
+            focusNode: _dateFocus,
+            hint: 'DD-MM-YYYY',
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text('Tags', style: NtkText.labelLarge),
+              const Spacer(),
+              ..._selectedTagIds.map((id) {
+                final tag = TagService.instance.tags.firstWhere(
+                  (t) => t.id == id,
+                  orElse: () => Tag(name: '', categoryId: 0),
+                );
+                final cat = CategoryService.instance.categories.firstWhere(
+                  (c) => c.id == tag.categoryId,
+                  orElse: () => Category(name: '', color: 0),
+                );
+                return Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: NtkTagChip(color: cat.color),
+                );
+              }),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      opaque: false,
+                      barrierDismissible: true,
+                      barrierColor: NtkColors.scrim,
+                      pageBuilder: (_, _, _) => NtkTagPicker(
+                        selectedTagIds: _selectedTagIds,
+                        onConfirm: (ids) {
+                          setState(() => _selectedTagIds = ids);
+                          Navigator.of(context).pop();
+                        },
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    NtkTextField(
-                      controller: _titleController,
-                      focusNode: _titleFocus,
-                      hint: 'Task title',
-                    ),
-                    const SizedBox(height: 12),
-                    NtkTextField(
-                      controller: _descController,
-                      focusNode: _descFocus,
-                      hint: 'Description',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        for (final p in [('H', 1), ('M', 2), ('L', 3)]) ...[
-                          if (p.$2 > 1) const SizedBox(width: 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _priority = p.$2),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: _priority == p.$2
-                                      ? _priorityColor(p.$2)
-                                      : NtkColors.surfaceHigh,
-                                ),
-                                child: Text(
-                                  p.$1,
-                                  style: NtkText.titleLarge.copyWith(
-                                    color: _priority == p.$2
-                                        ? NtkColors.onAccent
-                                        : NtkColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    NtkTextField(
-                      controller: _dateController,
-                      focusNode: _dateFocus,
-                      hint: 'DD-MM-YYYY',
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: widget.onClose,
-                            child: Container(
-                              height: 44,
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Cancel',
-                                style: NtkText.labelLarge.copyWith(
-                                  color: NtkColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (isEditing) ...[
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _delete,
-                              child: Container(
-                                height: 44,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: NtkColors.deleteButt,
-                                ),
-                                child: Text(
-                                  'Delete',
-                                  style: NtkText.labelLarge.copyWith(
-                                    color: NtkColors.onAccent,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _save,
-                            child: Container(
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: NtkColors.accentContainerLight,
-                              ),
-                              child: Text(
-                                'Save',
-                                style: NtkText.labelLarge.copyWith(
-                                  color: NtkColors.onAccent,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: NtkColors.border),
+                  ),
+                  child: Text('Select', style: NtkText.bodySmall),
                 ),
               ),
-            ),
+            ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

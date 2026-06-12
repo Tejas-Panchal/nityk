@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'ntk_text_field.dart';
+import 'ntk_tag_chip.dart';
+import 'ntk_tag_picker.dart';
+import 'ntk_dialog_base.dart';
 import '../theme/theme.dart';
+import '../database/database_helper.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../utils/utils.dart';
@@ -31,11 +35,13 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
   final _startFocus = FocusNode();
   final _finishFocus = FocusNode();
   String? _error;
-  int _activeTab = 0; // 0 = timer, 1 = manual
+  int _activeTab = 0;
+  List<int> _selectedTagIds = [];
 
   bool get isNewTimer => widget.log == null && _activeTab == 0;
   bool get isManual => widget.log == null && _activeTab == 1;
   bool get isEditing => widget.log != null;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +63,11 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
       }
     } else if (isManual) {
       _dateController.text = DateTimeUtils.date();
+    }
+    if (isEditing) {
+      DatabaseHelper.instance.getLogTagIds(widget.log!.id!).then((ids) {
+        if (mounted) setState(() => _selectedTagIds = ids);
+      });
     }
   }
 
@@ -97,6 +108,9 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
         updatedAt: now,
       );
       final id = await LogService.instance.create(log);
+      if (_selectedTagIds.isNotEmpty) {
+        await DatabaseHelper.instance.setLogTags(id, _selectedTagIds);
+      }
       LogTimerService.instance.start(id, title);
       widget.onClose();
     } catch (e) {
@@ -112,7 +126,7 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
         return;
       }
       if (_dateController.text.trim().isEmpty) {
-      _dateController.text = DateTimeUtils.dateDisplay(DateTimeUtils.date());
+        _dateController.text = DateTimeUtils.dateDisplay(DateTimeUtils.date());
       }
       final startMin = _startTimeController.text.trim().isEmpty
           ? null
@@ -173,8 +187,15 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
       );
       if (isEditing) {
         await LogService.instance.update(log);
+        await DatabaseHelper.instance.setLogTags(
+          widget.log!.id!,
+          _selectedTagIds,
+        );
       } else {
-        await LogService.instance.create(log);
+        final id = await LogService.instance.create(log);
+        if (_selectedTagIds.isNotEmpty) {
+          await DatabaseHelper.instance.setLogTags(id, _selectedTagIds);
+        }
       }
       widget.onClose();
     } catch (e) {
@@ -192,204 +213,162 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: widget.onClose,
-          child: Container(color: NtkColors.scrim),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedPadding(
-            duration: const Duration(milliseconds: 60),
-            curve: Curves.linear,
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: MediaQuery.of(context).viewInsets.bottom,
+    final title = isEditing
+        ? 'Edit Log'
+        : _activeTab == 0
+        ? 'New Log (Timer)'
+        : 'New Log (Manual)';
+    final canStart = LogTimerService.instance.canStart;
+    return NtkDialogBase(
+      onClose: widget.onClose,
+      title: title,
+      onSave: isNewTimer ? _startTimer : _save,
+      saveLabel: isNewTimer ? 'Start' : 'Save',
+      saveColor:
+          isNewTimer && !canStart ? NtkColors.textDisabled : null,
+      onDelete: isEditing ? _delete : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isEditing) ...[
+            Row(
+              children: [
+                for (final entry in [
+                  ('Timer', 0),
+                  ('Manual', 1),
+                ]) ...[
+                  if (entry.$2 > 0) const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () =>
+                          setState(() => _activeTab = entry.$2),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: _activeTab == entry.$2
+                              ? NtkColors.accentContainerLight
+                              : NtkColors.surfaceHigh,
+                        ),
+                        child: Text(
+                          entry.$1,
+                          style: NtkText.titleLarge.copyWith(
+                            color: _activeTab == entry.$2
+                                ? NtkColors.onAccent
+                                : NtkColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            child: SingleChildScrollView(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: NtkColors.surface,
-                  border: NtkColors.standardBorder,
+            const SizedBox(height: 16),
+          ],
+          NtkTextField(
+            controller: _titleController,
+            focusNode: _titleFocus,
+            hint: 'Title',
+          ),
+          const SizedBox(height: 12),
+          NtkTextField(
+            controller: _descController,
+            focusNode: _descFocus,
+            hint: 'Description',
+            maxLines: 3,
+          ),
+          if (isEditing || isManual) ...[
+            const SizedBox(height: 12),
+            NtkTextField(
+              controller: _dateController,
+              focusNode: _dateFocus,
+              hint: 'DD-MM-YYYY',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: NtkTextField(
+                    controller: _startTimeController,
+                    focusNode: _startFocus,
+                    hint: 'Start (HH:MM)',
+                  ),
                 ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isEditing
-                          ? 'Edit Log'
-                          : _activeTab == 0
-                          ? 'New Log (Timer)'
-                          : 'New Log (Manual)',
-                      style: NtkText.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    // Tab bar (only for new logs)
-                    if (!isEditing) ...[
-                      Row(
-                        children: [
-                          for (final entry in [
-                            ('Timer', 0),
-                            ('Manual', 1),
-                          ]) ...[
-                            if (entry.$2 > 0) const SizedBox(width: 8),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () =>
-                                    setState(() => _activeTab = entry.$2),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                  ),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: _activeTab == entry.$2
-                                        ? NtkColors.accentContainerLight
-                                        : NtkColors.surfaceHigh,
-                                  ),
-                                  child: Text(
-                                    entry.$1,
-                                    style: NtkText.titleLarge.copyWith(
-                                      color: _activeTab == entry.$2
-                                          ? NtkColors.onAccent
-                                          : NtkColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('-', style: NtkText.bodyLarge),
+                ),
+                Expanded(
+                  child: NtkTextField(
+                    controller: _finishTimeController,
+                    focusNode: _finishFocus,
+                    hint: 'Finish (HH:MM)',
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text('Tags', style: NtkText.labelLarge),
+              const Spacer(),
+              ..._selectedTagIds.map((id) {
+                final tag = TagService.instance.tags.firstWhere(
+                  (t) => t.id == id,
+                  orElse: () => Tag(name: '', categoryId: 0),
+                );
+                final cat = CategoryService.instance.categories.firstWhere(
+                  (c) => c.id == tag.categoryId,
+                  orElse: () => Category(name: '', color: 0),
+                );
+                return Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: NtkTagChip(color: cat.color),
+                );
+              }),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      opaque: false,
+                      barrierDismissible: true,
+                      barrierColor: NtkColors.scrim,
+                      pageBuilder: (_, _, _) => NtkTagPicker(
+                        selectedTagIds: _selectedTagIds,
+                        onConfirm: (ids) {
+                          setState(() => _selectedTagIds = ids);
+                          Navigator.of(context).pop();
+                        },
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                    NtkTextField(
-                      controller: _titleController,
-                      focusNode: _titleFocus,
-                      hint: 'Title',
                     ),
-                    const SizedBox(height: 12),
-                    NtkTextField(
-                      controller: _descController,
-                      focusNode: _descFocus,
-                      hint: 'Description',
-                      maxLines: 3,
-                    ),
-                    if (isEditing || isManual) ...[
-                      const SizedBox(height: 12),
-                      NtkTextField(
-                        controller: _dateController,
-                        focusNode: _dateFocus,
-                        hint: 'DD-MM-YYYY',
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: NtkTextField(
-                              controller: _startTimeController,
-                              focusNode: _startFocus,
-                              hint: 'Start (HH:MM)',
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('-', style: NtkText.bodyLarge),
-                          ),
-                          Expanded(
-                            child: NtkTextField(
-                              controller: _finishTimeController,
-                              focusNode: _finishFocus,
-                              hint: 'Finish (HH:MM)',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (_error != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _error!,
-                        style: NtkText.bodySmall.copyWith(
-                          color: NtkColors.error,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: widget.onClose,
-                            child: Container(
-                              height: 44,
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Cancel',
-                                style: NtkText.labelLarge.copyWith(
-                                  color: NtkColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (isEditing) ...[
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _delete,
-                              child: Container(
-                                height: 44,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: NtkColors.deleteButt,
-                                ),
-                                child: Text(
-                                  'Delete',
-                                  style: NtkText.labelLarge.copyWith(
-                                    color: NtkColors.onAccent,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: isNewTimer ? _startTimer : _save,
-                            child: Container(
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isNewTimer
-                                    ? (LogTimerService.instance.canStart
-                                          ? NtkColors.accentContainerLight
-                                          : NtkColors.textDisabled)
-                                    : NtkColors.accentContainerLight,
-                              ),
-                              child: Text(
-                                isNewTimer ? 'Start' : 'Save',
-                                style: NtkText.labelLarge.copyWith(
-                                  color: NtkColors.onAccent,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: NtkColors.border),
+                  ),
+                  child: Text('Select', style: NtkText.bodySmall),
                 ),
               ),
-            ),
+            ],
           ),
-        ),
-      ],
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: NtkText.bodySmall.copyWith(
+                color: NtkColors.error,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

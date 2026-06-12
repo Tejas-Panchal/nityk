@@ -26,15 +26,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _onChanged() => setState(() {});
+
   @override
   Widget build(BuildContext context) {
+    final s = SettingsService.instance;
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: 4,
+      itemCount: 5,
       itemBuilder: (context, index) {
-        final s = SettingsService.instance;
         switch (index) {
           case 0:
+            return const NtkCategoriesSection();
+          case 1:
             return NtkSettingsSection(
               title: 'General',
               children: [
@@ -55,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             );
-          case 1:
+          case 2:
             return NtkSettingsSection(
               title: 'Tasks',
               children: [
@@ -67,7 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             );
-          case 2:
+          case 3:
             return NtkSettingsSection(
               title: 'Data',
               isOpen: false,
@@ -93,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             );
-          case 3:
+          case 4:
             return NtkSettingsSection(
               title: 'About',
               isOpen: false,

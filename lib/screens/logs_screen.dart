@@ -4,6 +4,7 @@ import '../utils/utils.dart';
 import '../widgets/widgets.dart';
 import '../models/models.dart';
 import '../services/services.dart';
+import '../database/database_helper.dart';
 
 class LogsScreen extends StatefulWidget {
   final void Function(Widget) push;
@@ -15,12 +16,31 @@ class LogsScreen extends StatefulWidget {
 class _LogsScreenState extends State<LogsScreen> {
   bool _showEditDialog = false;
   Log? _editingLog;
+  Map<int, List<int>> _tagColors = {};
 
   @override
   void initState() {
     super.initState();
     LogService.instance.addListener(_onChanged);
     LogTimerService.instance.addListener(_onTimerChanged);
+    _loadTagColors();
+  }
+
+  Future<void> _loadTagColors() async {
+    final tags = TagService.instance.tags;
+    final categories = CategoryService.instance.categories;
+    final allPairs = await DatabaseHelper.instance.rawQuery('SELECT * FROM log_tags');
+    final map = <int, List<int>>{};
+    for (final pair in allPairs) {
+      final logId = pair['log_id'] as int;
+      final tagId = pair['tag_id'] as int;
+      final tag = tags.firstWhere((t) => t.id == tagId,
+          orElse: () => Tag(name: '', categoryId: 0));
+      final cat = categories.firstWhere((c) => c.id == tag.categoryId,
+          orElse: () => Category(name: '', color: 0));
+      map.putIfAbsent(logId, () => []).add(cat.color);
+    }
+    if (mounted) setState(() => _tagColors = map);
   }
 
   @override
@@ -30,8 +50,14 @@ class _LogsScreenState extends State<LogsScreen> {
     super.dispose();
   }
 
-  void _onChanged() => setState(() {});
-  void _onTimerChanged() => setState(() {});
+  void _onChanged() {
+    _loadTagColors();
+    setState(() {});
+  }
+  void _onTimerChanged() {
+    _loadTagColors();
+    setState(() {});
+  }
 
   static (int year, int month) _parseYearMonth(String dateStr) {
     return (
@@ -77,6 +103,7 @@ class _LogsScreenState extends State<LogsScreen> {
     final tiles = logs.reversed.map((log) {
       return NtkLogTile(
         log: log,
+        tagColors: log.id != null ? _tagColors[log.id!] ?? [] : [],
         onEdit: () {
           setState(() {
             _editingLog = log;

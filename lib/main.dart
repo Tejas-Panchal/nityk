@@ -9,6 +9,9 @@ void main() async {
   await SettingsService.instance.load();
   await TaskService.instance.load();
   await LogService.instance.load();
+  await CategoryService.instance.load();
+  await TagService.instance.load();
+
   // Restore active timers from unfinished logs
   for (final log in LogService.instance.activeLogs) {
     if (log.id != null) {

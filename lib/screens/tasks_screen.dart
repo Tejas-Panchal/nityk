@@ -3,6 +3,7 @@ import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../models/models.dart';
 import '../services/services.dart';
+import '../database/database_helper.dart';
 
 class TasksScreen extends StatefulWidget {
   final void Function(Widget) push;
@@ -14,12 +15,31 @@ class TasksScreen extends StatefulWidget {
 class _TasksScreenState extends State<TasksScreen> {
   bool _showEditDialog = false;
   Task? _editingTask;
+  Map<int, List<int>> _tagColors = {};
 
   @override
   void initState() {
     super.initState();
     TaskService.instance.addListener(_onChanged);
     LogTimerService.instance.addListener(_onTimerChanged);
+    _loadTagColors();
+  }
+
+  Future<void> _loadTagColors() async {
+    final tags = TagService.instance.tags;
+    final categories = CategoryService.instance.categories;
+    final allPairs = await DatabaseHelper.instance.rawQuery('SELECT * FROM task_tags');
+    final map = <int, List<int>>{};
+    for (final pair in allPairs) {
+      final taskId = pair['task_id'] as int;
+      final tagId = pair['tag_id'] as int;
+      final tag = tags.firstWhere((t) => t.id == tagId,
+          orElse: () => Tag(name: '', categoryId: 0));
+      final cat = categories.firstWhere((c) => c.id == tag.categoryId,
+          orElse: () => Category(name: '', color: 0));
+      map.putIfAbsent(taskId, () => []).add(cat.color);
+    }
+    if (mounted) setState(() => _tagColors = map);
   }
 
   @override
@@ -29,12 +49,16 @@ class _TasksScreenState extends State<TasksScreen> {
     super.dispose();
   }
 
-  void _onChanged() => setState(() {});
+  void _onChanged() {
+    _loadTagColors();
+    setState(() {});
+  }
   void _onTimerChanged() => setState(() {});
 
   Widget _buildTaskTile(Task task) {
     return NtkTaskTile(
       task: task,
+      tagColors: task.id != null ? _tagColors[task.id!] ?? [] : [],
       onToggle: () async => TaskService.instance.toggleComplete(task.id!),
       onEdit: () {
         setState(() {

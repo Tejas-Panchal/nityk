@@ -14,3 +14,8 @@ export 'ntk_log_dialog.dart';
 export 'ntk_tasks_section.dart';
 export 'ntk_logs_section.dart';
 export 'ntk_settings_section.dart';
+export 'ntk_tag_chip.dart';
+export 'ntk_tag_picker.dart';
+export 'ntk_categories_section.dart';
+export 'ntk_add_category_dialog.dart';
+export 'ntk_dialog_base.dart';

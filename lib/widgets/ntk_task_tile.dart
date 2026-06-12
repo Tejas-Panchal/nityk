@@ -9,12 +9,15 @@ class NtkTaskTile extends StatefulWidget {
   final VoidCallback onToggle;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final List<int> tagColors;
+
   const NtkTaskTile({
     super.key,
     required this.task,
     required this.onToggle,
     required this.onEdit,
     required this.onDelete,
+    this.tagColors = const [],
   });
 
   @override
@@ -206,6 +209,23 @@ class _NtkTaskTileState extends State<NtkTaskTile> {
                   ),
                 );
               },
+            ),
+          if (widget.tagColors.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 40, bottom: 4),
+              child: Row(
+                children: widget.tagColors.map((c) => Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Color(c),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                )).toList(),
+              ),
             ),
         ],
       ),
