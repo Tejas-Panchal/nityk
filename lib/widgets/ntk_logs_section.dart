@@ -8,6 +8,7 @@ class NtkLogsSection extends StatelessWidget {
   final bool isOpen;
   final Color openColor;
   final bool showBottomPadding;
+  final Widget? trailing;
   final List<Widget> children;
 
   const NtkLogsSection({
@@ -16,6 +17,7 @@ class NtkLogsSection extends StatelessWidget {
     this.isOpen = true,
     this.openColor = NtkColors.surfaceHigh,
     this.showBottomPadding = true,
+    this.trailing,
     required this.children,
   });
 
@@ -25,6 +27,7 @@ class NtkLogsSection extends StatelessWidget {
     this.isOpen = false,
     this.openColor = NtkColors.textDisabled,
     this.showBottomPadding = false,
+    this.trailing,
     required this.children,
   });
 
@@ -35,6 +38,7 @@ class NtkLogsSection extends StatelessWidget {
       isOpen: isOpen,
       openColor: openColor,
       showBottomPadding: showBottomPadding,
+      trailing: trailing,
       showBottomBorder: false,
       showSeparators: false,
       children: children,

@@ -58,7 +58,7 @@ class _NtkLogTimerPillState extends State<NtkLogTimerPill> {
     super.dispose();
   }
 
-  String get _titleDisplay => _showStopConfirm ? 'Stop?' : widget.title;
+  String get _titleDisplay => _showStopConfirm ? 'Finish?' : widget.title;
 
   String get _timerDisplay {
     final h = _elapsed.inHours;

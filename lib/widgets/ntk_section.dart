@@ -11,6 +11,7 @@ class NtkSection extends StatefulWidget {
   final bool showBottomBorder;
   final bool showSeparators;
   final bool showBottomPadding;
+  final Widget? trailing;
 
   const NtkSection({
     super.key,
@@ -22,6 +23,7 @@ class NtkSection extends StatefulWidget {
     this.showBottomBorder = false,
     this.showSeparators = false,
     this.showBottomPadding = true,
+    this.trailing,
   });
   @override
   State<NtkSection> createState() => _NtkSectionState();
@@ -83,12 +85,15 @@ class _NtkSectionState extends State<NtkSection> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  widget.title,
-                  style: NtkText.labelLarge.copyWith(
-                    color: NtkColors.textPrimary,
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: NtkText.labelLarge.copyWith(
+                      color: NtkColors.textPrimary,
+                    ),
                   ),
                 ),
+                if (widget.trailing != null) widget.trailing!,
               ],
             ),
           ),

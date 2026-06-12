@@ -70,7 +70,11 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Widget _buildDateSection(String date, List<Log> logs, {bool child = false}) {
-    final tiles = logs.map((log) {
+    final totalSeconds = logs.fold<int>(
+      0,
+      (sum, l) => sum + (l.durationSeconds ?? 0),
+    );
+    final tiles = logs.reversed.map((log) {
       return NtkLogTile(
         log: log,
         onEdit: () {
@@ -86,17 +90,33 @@ class _LogsScreenState extends State<LogsScreen> {
       );
     }).toList();
 
+    final trailing = totalSeconds > 0
+        ? Text(
+            DateTimeUtils.formatDuration(Duration(seconds: totalSeconds)),
+            style: NtkText.labelLarge.copyWith(
+              fontSize: 12,
+              color: NtkColors.textSecondary,
+            ),
+          )
+        : null;
+
     if (child) {
-      return NtkLogsSection.child(
+      return NtkLogsSection(
         key: ValueKey(date),
         title: DateTimeUtils.dateDisplay(date),
+        isOpen: false,
+        showBottomPadding: false,
+        trailing: trailing,
         children: tiles,
       );
     }
+
     return NtkLogsSection(
       key: ValueKey(date),
       title: DateTimeUtils.dateDisplay(date),
+      trailing: trailing,
       isOpen: true,
+      showBottomPadding: true,
       children: tiles,
     );
   }
@@ -128,11 +148,34 @@ class _LogsScreenState extends State<LogsScreen> {
 
     if (currentMonthLogs.isNotEmpty) {
       final dateGroups = _groupLogsByDate(currentMonthLogs);
-      for (final group in dateGroups) {
+      final top3 = dateGroups.take(3).toList();
+      final rest = dateGroups.skip(3).toList();
+
+      for (final group in top3) {
         widgets.add(
           _buildDateSection(
             group['date'] as String,
             group['logs'] as List<Log>,
+          ),
+        );
+      }
+
+      if (rest.isNotEmpty) {
+        final children = rest
+            .map(
+              (group) => _buildDateSection(
+                group['date'] as String,
+                group['logs'] as List<Log>,
+                child: true,
+              ),
+            )
+            .toList();
+        widgets.add(
+          NtkLogsSection(
+            key: const ValueKey('thisMonth'),
+            title: _monthName(currentMonth),
+            isOpen: false,
+            children: children,
           ),
         );
       }
@@ -203,7 +246,9 @@ class _LogsScreenState extends State<LogsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final logs = LogService.instance.allLogs;
+    final logs = LogService.instance.allLogs
+        .where((log) => log.finishedAt != null)
+        .toList();
 
     if (logs.isEmpty) {
       return const Center(child: Text('No logs yet', style: NtkText.bodyLarge));
