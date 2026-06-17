@@ -6,10 +6,7 @@ class NtkBottomNavDestination {
   final String label;
   final NtkIcons icon;
 
-  const NtkBottomNavDestination({
-    required this.label,
-    required this.icon,
-  });
+  const NtkBottomNavDestination({required this.label, required this.icon});
 }
 
 class NtkBottomNav extends StatelessWidget {
@@ -97,23 +94,19 @@ class _AddButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: isOpen ? 0.785 : 0), // 0° → 45°
+        tween: Tween(begin: 0, end: isOpen ? 2.355 : 0), // 0° → 45°
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         builder: (context, angle, child) {
-          return Transform.rotate(
-            angle: angle,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Color.lerp(
-                  NtkColors.accentContainer,
-                  NtkColors.accent,
-                  (angle / 0.785).clamp(0.0, 1.0),
-                ),
-              ),
-              child: const Center(
+          return Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: isOpen ? NtkColors.accent : NtkColors.accentContainer,
+            ),
+            child: Center(
+              child: Transform.rotate(
+                angle: angle,
                 child: NtkIcon(
                   icon: NtkIcons.add,
                   size: 24,

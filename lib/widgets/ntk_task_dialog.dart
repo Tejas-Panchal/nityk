@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'ntk_text_field.dart';
 import 'ntk_tag_chip.dart';
 import 'ntk_tag_picker.dart';
-import 'ntk_dialog_base.dart';
+import 'ntk_base_dialog.dart';
 import '../theme/theme.dart';
 import '../database/database_helper.dart';
 import '../services/services.dart';
@@ -123,7 +123,7 @@ class _NtkTaskDialogState extends State<NtkTaskDialog> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.task != null;
-    return NtkDialogBase(
+    return NtkBaseDialog(
       onClose: widget.onClose,
       title: isEditing ? 'Edit Task' : 'Add Task',
       onSave: _save,

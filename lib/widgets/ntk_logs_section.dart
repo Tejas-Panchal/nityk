@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
-import 'ntk_section.dart';
+import 'ntk_base_section.dart';
 
 /// Collapsible section for log lists — no separators, no bottom border.
 class NtkLogsSection extends StatelessWidget {
@@ -33,7 +33,7 @@ class NtkLogsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NtkSection(
+    return NtkBaseSection(
       title: title,
       isOpen: isOpen,
       openColor: openColor,

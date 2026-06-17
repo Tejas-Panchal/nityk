@@ -101,9 +101,7 @@ class _LogsScreenState extends State<LogsScreen> {
       (sum, l) => sum + (l.durationSeconds ?? 0),
     );
     final tiles = logs.reversed.map((log) {
-      return NtkLogTile(
-        log: log,
-        tagColors: log.id != null ? _tagColors[log.id!] ?? [] : [],
+      return NtkSwipeTile(
         onEdit: () {
           setState(() {
             _editingLog = log;
@@ -114,6 +112,10 @@ class _LogsScreenState extends State<LogsScreen> {
           LogTimerService.instance.stop(log.id!);
           await LogService.instance.delete(log.id!);
         },
+        child: NtkLogTile(
+          log: log,
+          tagColors: log.id != null ? _tagColors[log.id!] ?? [] : [],
+        ),
       );
     }).toList();
 

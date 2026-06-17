@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'ntk_text_field.dart';
 import 'ntk_tag_chip.dart';
 import 'ntk_tag_picker.dart';
-import 'ntk_dialog_base.dart';
+import 'ntk_base_dialog.dart';
 import '../theme/theme.dart';
 import '../database/database_helper.dart';
 import '../models/models.dart';
@@ -219,13 +219,12 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
         ? 'New Log (Timer)'
         : 'New Log (Manual)';
     final canStart = LogTimerService.instance.canStart;
-    return NtkDialogBase(
+    return NtkBaseDialog(
       onClose: widget.onClose,
       title: title,
       onSave: isNewTimer ? _startTimer : _save,
       saveLabel: isNewTimer ? 'Start' : 'Save',
-      saveColor:
-          isNewTimer && !canStart ? NtkColors.textDisabled : null,
+      saveColor: isNewTimer && !canStart ? NtkColors.textDisabled : null,
       onDelete: isEditing ? _delete : null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -233,15 +232,11 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
           if (!isEditing) ...[
             Row(
               children: [
-                for (final entry in [
-                  ('Timer', 0),
-                  ('Manual', 1),
-                ]) ...[
+                for (final entry in [('Timer', 0), ('Manual', 1)]) ...[
                   if (entry.$2 > 0) const SizedBox(width: 8),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _activeTab = entry.$2),
+                      onTap: () => setState(() => _activeTab = entry.$2),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         alignment: Alignment.center,
@@ -362,9 +357,7 @@ class _NtkLogDialogState extends State<NtkLogDialog> {
             const SizedBox(height: 8),
             Text(
               _error!,
-              style: NtkText.bodySmall.copyWith(
-                color: NtkColors.error,
-              ),
+              style: NtkText.bodySmall.copyWith(color: NtkColors.error),
             ),
           ],
         ],

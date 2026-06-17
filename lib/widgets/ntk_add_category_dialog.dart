@@ -3,7 +3,7 @@ import '../theme/theme.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../utils/utils.dart';
-import 'ntk_dialog_base.dart';
+import 'ntk_base_dialog.dart';
 
 class NtkAddCategoryDialog extends StatefulWidget {
   final VoidCallback onClose;
@@ -35,7 +35,7 @@ class _NtkAddCategoryDialogState extends State<NtkAddCategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return NtkDialogBase(
+    return NtkBaseDialog(
       onClose: widget.onClose,
       title: 'New Category',
       onSave: _save,

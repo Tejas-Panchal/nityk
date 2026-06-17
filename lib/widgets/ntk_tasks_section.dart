@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
-import 'ntk_section.dart';
+import 'ntk_base_section.dart';
 
 /// Collapsible section for task lists — no separators, no bottom border.
 class NtkTasksSection extends StatelessWidget {
@@ -19,7 +19,7 @@ class NtkTasksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NtkSection(
+    return NtkBaseSection(
       title: title,
       isOpen: isOpen,
       backgroundColor: backgroundColor ?? NtkColors.accentContainerLight,

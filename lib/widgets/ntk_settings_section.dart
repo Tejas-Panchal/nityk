@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
-import 'ntk_section.dart';
+import 'ntk_base_section.dart';
 
 /// Collapsible section for settings — has 1px separators between children
 /// and a bottom border on the children container.
@@ -20,7 +20,7 @@ class NtkSettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NtkSection(
+    return NtkBaseSection(
       title: title,
       isOpen: isOpen,
       backgroundColor: backgroundColor ?? NtkColors.accentContainerLight,

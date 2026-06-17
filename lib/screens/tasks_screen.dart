@@ -56,10 +56,7 @@ class _TasksScreenState extends State<TasksScreen> {
   void _onTimerChanged() => setState(() {});
 
   Widget _buildTaskTile(Task task) {
-    return NtkTaskTile(
-      task: task,
-      tagColors: task.id != null ? _tagColors[task.id!] ?? [] : [],
-      onToggle: () async => TaskService.instance.toggleComplete(task.id!),
+    return NtkSwipeTile(
       onEdit: () {
         setState(() {
           _editingTask = task;
@@ -67,6 +64,11 @@ class _TasksScreenState extends State<TasksScreen> {
         });
       },
       onDelete: () async => TaskService.instance.delete(task.id!),
+      child: NtkTaskTile(
+        task: task,
+        tagColors: task.id != null ? _tagColors[task.id!] ?? [] : [],
+        onToggle: () async => TaskService.instance.toggleComplete(task.id!),
+      ),
     );
   }
 

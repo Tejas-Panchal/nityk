@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../theme/theme.dart';
 
-class NtkDialogBase extends StatelessWidget {
+class NtkBaseDialog extends StatelessWidget {
   final VoidCallback onClose;
   final String title;
   final Widget child;
@@ -11,7 +11,7 @@ class NtkDialogBase extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool canSave;
 
-  const NtkDialogBase({
+  const NtkBaseDialog({
     super.key,
     required this.onClose,
     required this.title,
@@ -103,7 +103,8 @@ class NtkDialogBase extends StatelessWidget {
                                 height: 44,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: saveColor ??
+                                  color:
+                                      saveColor ??
                                       (canSave
                                           ? NtkColors.accentContainerLight
                                           : NtkColors.textDisabled),
